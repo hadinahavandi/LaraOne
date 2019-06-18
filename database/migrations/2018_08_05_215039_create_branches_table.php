@@ -30,7 +30,7 @@ class CreateBranchesTable extends Migration
             $table->integer('branchadmin_id')->unsigned();
             $table->timestamps();
             $table->foreign('company_id')->references('id')->on('companies');
-            $table->foreign('area_id')->references('id')->on('areas');
+            $table->foreign('area_id')->references('id')->on('placeman_area');
             $table->foreign('place_id')->references('id')->on('places');
             $table->foreign('branchadmin_id')->references('id')->on('branchadmins');
         });

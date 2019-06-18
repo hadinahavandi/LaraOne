@@ -13,8 +13,8 @@ class PostController extends SweetController
 
     public function add(Request $request)
     {
-        if(!Bouncer::can('posts.post.insert'))
-            throw new AccessDeniedHttpException();
+//        if(!Bouncer::can('posts.post.insert'))
+//            throw new AccessDeniedHttpException();
 
         $InputTitle=$request->input('title');
         $InputSummaryte=$request->input('summaryte');

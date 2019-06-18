@@ -27,12 +27,15 @@ class SweetQueryBuilder
             return $QueryBuilder->orderBy($SortFiledName,$IsDesc==0?'asc':'desc');
         return $QueryBuilder;
     }
-    public static function setPaginationIfNotNull(Builder $QueryBuilder,Request $request)
+
+    public static function setPaginationFromRequest(Builder $QueryBuilder, Request $request)
     {
-        $Devicetypes=SweetQueryBuilder::setPaginationIfNotNull($DevicetypeQuery,$request->get('__startrow'),$request->get('__pagesize'))->get();
+        $QueryBuilder = SweetQueryBuilder::setPaginationIfNotNull($QueryBuilder, $request->get('__startrow'), $request->get('__pagesize'));
+        return $QueryBuilder;
 
     }
-    public static function setPaginationFromRequest(Builder $QueryBuilder,$Skip,$PageSize)
+
+    public static function setPaginationIfNotNull(Builder $QueryBuilder, $Skip, $PageSize)
     {
         if($Skip!==null)
             $QueryBuilder= $QueryBuilder->skip($Skip);

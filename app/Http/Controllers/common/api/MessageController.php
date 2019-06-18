@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\common\api;
 
-use App\models\Area;
+use App\models\placeman_area;
 use App\models\Branch;
 use App\models\Branchadmin;
-use App\models\City;
+use App\models\placeman_city;
 use App\models\Company;
 use App\models\Place;
-use App\models\Province;
+use App\models\placeman_province;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;

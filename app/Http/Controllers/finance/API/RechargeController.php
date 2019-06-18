@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\financial\api;
 
 use App\Http\Controllers\financial\classes\PayDotIr;
-use App\models\Area;
+use App\models\finance\finance_transaction;
+use App\models\placeman_area;
 use App\models\Branch;
 use App\models\Branchadmin;
-use App\models\City;
+use App\models\placeman_city;
 use App\models\Company;
 use App\models\Place;
-use App\models\Province;
+use App\models\placeman_province;
 use App\models\Transaction;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -34,7 +35,7 @@ class RechargeController extends Controller
             $factorNumber = 123;
             $result=PayDotIr::send($api,$amount,$redirect,$factorNumber);
             $result = json_decode($result);
-            Transaction::create(['amount'=>$amount,'transactionid'=>$result->transId,'status'=>1,'user_id'=>$ID]);
+            finance_transaction::create(['amount_prc' => $amount, 'transactionid' => $result->transId, 'status' => 1, 'user_id' => $ID, 'description_te' => 'recharge']);
             return response()->json(['transactionid'=>$result->transId], 200);
         }
         catch (Exception $ex)

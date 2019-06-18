@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\financial\web;
+namespace App\Http\Controllers\finance\web;
 
-use App\Http\Controllers\financial\classes\PayDotIr;
+use App\Http\Controllers\finance\classes\PayDotIr;
 use App\models\Branch;
 use App\models\Branchadmin;
 use App\models\Category;
 use App\models\Context;
+use App\models\finance\finance_transaction;
 use App\models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -17,17 +18,17 @@ class RechargeController extends Controller
     public function startPayment($TransactionID)
     {
 
-        $Transaction=Transaction::where('transactionid', $TransactionID)->first();
+        $Transaction = finance_transaction::where('transactionid', $TransactionID)->first();
         $Transaction->status=2;
         $Transaction->save();
         $go = "https://pay.ir/payment/gateway/$TransactionID";
-        header("Location: $go");
+        return redirect($go);
     }
     public function verifyPayment(Request $request)
     {
         $api = '5a2f04bec7d74cd1292c20f04b10f97b';
         $transId = $request->input('transId');
-        $Transaction=Transaction::where('transactionid', $transId)->first();
+        $Transaction = finance_transaction::where('transactionid', $transId)->first();
         $Transaction->status=3;
         $Transaction->save();
         $user_id=$Transaction->user_id;

@@ -1,358 +1,161 @@
 <?php
 
-namespace App\Http\Controllers\placeman\api;
+namespace App\Http\Controllers\placeman\API;
 
-use App\models\Area;
-use App\models\Branch;
-use App\models\Branchadmin;
-use App\models\City;
-use App\models\Company;
-use App\models\Place;
-use App\models\Province;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
+use App\models\placeman\placeman_place;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Validator;
+use App\Sweet\SweetQueryBuilder;
+use App\Sweet\SweetController;
 use App\User;
+use Illuminate\Http\Request;
+use Bouncer;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-class PlaceController extends Controller
+class PlaceController extends SweetController
 {
-    private $SERVERPATH = "/home/sweetsof/public_html/babimeh/placeman";
-
-    public function listPlaces()
-    {
-        $Places=Branch::getBranchPlaces(700, 1,Branch::$ALL);
-        return response()->json($Places, 200);
-    }
-
-    public function listInactivePlaces()
-    {
-        return response()->json(Branch::getBranchPlaces(700, 0,Branch::$ALL), 200);
-    }
-
-    public function listAllPlaces()
-    {
-        $Places=Branch::getBranchPlaces(1500, -1,Branch::$ALL);
-        return response()->json($Places, 200);
-    }
-    public function changePlaceActivation($branch_id, $isActive)
-    {
-        $Branch = new Branch();
-        $Branch = $Branch->find($branch_id);
-        if ($isActive == 1){
-            $Branch->isactive = true;
-            $Branch->save();
-            return response()->json(['message' => 'فعال سازی با موفقیت انجام شد.'], 200);
-        }
-        elseif($isActive==0){
-
-            $Branch->isactive = false;
-            $Branch->save();
-            return response()->json(['message' => 'غیر فعال سازی با موفقیت انجام شد.'], 200);
-        }
-        elseif($isActive==2)
-        {
-            $Place = new Place();
-            $Place = $Place->find($Branch->place_id);
-            $BranchAdmin = new Branchadmin();
-            $BranchAdmin = $BranchAdmin->find($Branch->branchadmin_id);
-            $User = new User();
-            $User = $User->find($BranchAdmin->user_id);
-            $Branch->delete();
-            $Place->delete();
-            $BranchAdmin->delete();
-            $User->delete();
-            return response()->json(['message' => 'حذف با موفقیت انجام شد.'], 200);
-        }
-    }
-
-    public function getBranch($branch_id)
-    {
-        $Branch = new Branch();
-        $Branch = $Branch->find($branch_id);
-        $Company = new Company();
-        $Company = $Company->find($Branch->company_id);
-        $Place = new Place();
-        $Place = $Place->find($Branch->place_id);
-
-        if ($Branch != null)
-            return response()->json(["branch" => $Branch, "company" => $Company, "place" => $Place], 200);
-        return response()->json([], 200);
-    }
-
-    public function getBranchFullInfo($branch_id)
-    {
-        $Branch = new Branch();
-        $Branch = $Branch->find($branch_id);
-        $BranchAdmin = new Branchadmin();
-        $BranchAdmin = $BranchAdmin->find($Branch->branchadmin_id);
-        $Company = new Company();
-        $Company = $Company->find($Branch->company_id);
-        $Place = new Place();
-        $Place = $Place->find($Branch->place_id);
-        if ($Branch != null)
-            return response()->json(["branch" => $Branch, "company" => $Company, "place" => $Place, "branchadmin" => $BranchAdmin], 200);
-        return response()->json([], 200);
-    }
-
-    public function getUserBranch()
-    {
-        $ID = Auth::user()->getAuthIdentifier();
-        $Branchadmin = Branchadmin::where('user_id', $ID)->first();
-        $Branch = Branch::where('branchadmin_id', $Branchadmin->id)->first();
-//        $Branch=new Branch();
-//        $Branch=$Branch->find($branch_id);
-        $Company = new Company();
-        $Company = $Company->find($Branch->company_id);
-        $Place = new Place();
-        $Place = $Place->find($Branch->place_id);
-        $Area = new Area();
-        $Area = $Area->find($Branch->area_id);
-        $City = new City();
-        $City = $City->find($Area->city_id);
-        $Province = new Province();
-        $Province = $Province->find($City->province_id);
-        if ($Branch != null)
-            return response()->json(["branch" => $Branch, "company" => $Company, "place" => $Place, 'branchadmin' => $Branchadmin, 'area' => $Area, 'city' => $City, 'province' => $Province], 200);
-        return response()->json([], 200);
-    }
-
-    public function listProvinces()
-    {
-        return response()->json(Province::all(["*"]), 200);
-    }
-
-    public function listCities($Province_id)
-    {
-        return response()->json(City::where('province_id', $Province_id)
-            ->orderBy('title', 'asc')
-            ->take(100)
-            ->get(), 200);
-
-//        return response()->json([['title'=>'iran'],['title'=>$ID."I"]], 200);
-    }
-
-    public function listAreas($Province_id, $CityID)
-    {
-        return response()->json(Area::where('city_id', $CityID)
-            ->orderBy('title', 'asc')
-            ->take(100)
-            ->get(), 200);
-
-    }
-
-    public function listCompanies()
-    {
-//        $ID=Auth::user()->getAuthIdentifier();
-        return response()->json(Company::all(["*"]), 200);
-//        return response()->json([['title'=>'iran'],['title'=>$ID]], 200);
-    }
-
-    private function validateFields(Request $request,$IsAdd)
-    {
-        $Fileds=[
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'title' => 'required|min:2',
-            'tel' => 'required|numeric',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8',
-            'address' => 'required|min:8',
-            'fundationyear' => 'required|numeric|min:2',
-            'code' => 'required|numeric|min:1',
-            'area_id' => 'required|numeric',
-            'name' => 'required|min:2',
-            'family' => 'required|min:2',
-            'mellicode' => 'required|numeric|min:10',
-            'mobile' => 'required|numeric|min:11',
-        ];
-        if(!$IsAdd)
-        {
-            $Fileds=[
-                'latitude' => 'required',
-                'longitude' => 'required',
-                'title' => 'required|min:2',
-                'tel' => 'required|numeric',
-                'email' => 'required|email',
-                'address' => 'required|min:8',
-                'fundationyear' => 'required|numeric|min:2',
-                'code' => 'required|numeric|min:1',
-                'area_id' => 'required|numeric',
-                'name' => 'required|min:2',
-                'family' => 'required|min:2',
-                'mellicode' => 'required|numeric|min:10',
-                'mobile' => 'required|numeric|min:11',
-            ];
-        }
-        $this->validate($request, $Fileds, [
-            'title.required' => 'وارد کردن عنوان اجباری است',
-            'tel.required' => 'وارد کردن تلفن اجباری است',
-            'email.required' => 'وارد کردن ایمیل اجباری است',
-            'email.unique' => 'کاربری با این آدرس ایمیل موجود است.',
-            'address.required' => 'وارد کردن آدرس اجباری است',
-            'fundationyear.required' => 'وارد کردن سال تاسیس اجباری است',
-            'code.required' => 'وارد کردن کد اجباری است',
-            'area_id.required' => 'وارد کردن منطقه اجباری است',
-            'name.required' => 'وارد کردن نام اجباری است',
-            'family.required' => 'وارد کردن نام خانوادگی اجباری است',
-            'mellicode.required' => 'وارد کردن کد ملی اجباری است',
-            'mobile.required' => 'وارد کردن موبایل اجباری است',
-            'title.min' => ' عنوان خیلی کوتاه است',
-            'code.min' => ' کد خیلی کوتاه است',
-            'address.min' => ' آدرس خیلی کوتاه است',
-            'password.min' => ' کلمه عبور خیلی کوتاه است',
-            'name.min' => ' نام خیلی کوتاه است',
-            'family.min' => ' نام خانوادگی خیلی کوتاه است',
-            'mellicode.min' => 'کد ملی باید 10 رقمی باشد، در صورت وجود صفر در ابتدای کد ملی می بایست آن را نیز وارد کنید',
-            'mobile.min' => ' شماره موبایل صحیح نیست، شماره موبایل باید با 09 شروع شود',
-        ]);
-    }
 
     public function add(Request $request)
     {
+        if (!Bouncer::can('placeman.place.insert'))
+            throw new AccessDeniedHttpException();
 
-        $this->validateFields($request,true);
-
-        DB::beginTransaction();
-        $latitude = $request->input('latitude') + 0;
-        $longitude = $request->input('longitude') + 0;
-        $title = $request->input('title');
-        $description = $request->input('description');
-        $logo = $request->input('logo');
-        $tel = $request->input('tel');
-        $email = $request->input('email');
-        $password = $request->input('password');
-        $address = $request->input('address');
-        $fundationyear = $request->input('fundationyear');
-        $code = $request->input('code');
-        $company_id = $request->input('company_id');
-        $area_id = $request->input('area_id');
-        $name = $request->input('name');
-        $family = $request->input('family');
-        $melliCode = $request->input('mellicode');
-        $mobile = $request->input('mobile');
-        $email=strtolower($email);
-
-        $Place = Place::create(['title' => $title, 'description' => $address, 'logo' => $logo, 'latitude' => $latitude, 'longitude' => $longitude]);
-
-        $User = User::where('email', $email);
-        if ($User != null && key_exists('id',$User)) {
-            $success['token'] = "-1";
-            $success['message'] = "کاربری با این ایمیل موجود است.";
-            return response()->json($success, 201);
+        $InputTitle = $request->input('title');
+        $InputLogoigu = $request->file('logoigu');
+        if ($InputLogoigu != null) {
+            $InputLogoigu->move('img/placeman/place', $InputLogoigu->getClientOriginalName());
+            $InputLogoigu = 'img/placeman/place/' . $InputLogoigu->getClientOriginalName();
+        } else {
+            $InputLogoigu = '';
         }
+        $InputDescription = $request->input('description');
+        $InputActive = $request->input('active');
+        $InputAddress = $request->input('address');
+        $InputArea = $request->input('area');
+        $InputUser = Auth::user()->getAuthIdentifier();
+        $InputLatitude = $request->input('latitude');
+        $InputLongitude = $request->input('longitude');
+        $InputVisits = $request->input('visits');
 
-        $licencePath = $this->SERVERPATH . '/public/licences';
-        $licenceFile = $request->file('licence');
-        $licenceFileURL = "";
-        if ($licenceFile != null) {
-
-            $licenceFile->move($licencePath, $Place->id . ".jpg");
-            $licenceFileURL = "licences\\" . $Place->id . ".jpg";
-        }
-
-        $destinationPath = $this->SERVERPATH . '/public/profilepictures';
-        $file = $request->file('photo');
-        $photourl = "";
-        if ($file != null) {
-
-            $file->move($destinationPath, $Place->id . ".jpg");
-            $photourl = "profilepictures\\" . $Place->id . ".jpg";
-        }
-
-        $place_id = $Place->id;
-
-        $user = User::create(['name' => $name . " " . $family, 'email' => $email, 'password' => bcrypt($password)]);
-        $branchadmin = Branchadmin::create(['name' => $name, 'family' => $family, 'mob' => $mobile, 'user_id' => $user->id, 'mellicode' => $melliCode, 'email' => $email, 'licenceurl' => $licenceFileURL]);
-        $branchadmin_id = $branchadmin->id;
-        Branch::create(['title' => $title, 'tel' => $tel, 'email' => $email, 'address' => $address, 'isactive' => false, 'fundationyear' => $fundationyear
-            , 'code' => $code, 'photourl' => $photourl, 'expire_at'=>Carbon::now(),'company_id' => $company_id, 'area_id' => $area_id, 'place_id' => $place_id, 'branchadmin_id' => $branchadmin_id]);
-
-        $success['token'] = $user->createToken('BaBimeh')->accessToken;
-        $success['message'] = "اطلاعات با موفقیت ثبت شد";
-
-        DB::commit();
-        return response()->json($success, 201);
-
+        $Place = placeman_place::create(['title' => $InputTitle, 'logo_igu' => $InputLogoigu, 'description' => $InputDescription, 'isactive' => $InputActive, 'address' => $InputAddress, 'area_fid' => $InputArea, 'user_fid' => $InputUser, 'latitude' => $InputLatitude, 'longitude' => $InputLongitude, 'visits' => $InputVisits, 'deletetime' => -1]);
+        return response()->json(['Data' => $Place], 201);
     }
 
-    public function edit(Request $request)
+    public function update($id, Request $request)
     {
-        DB::beginTransaction();
-        $ID = Auth::user()->getAuthIdentifier();
+        if (!Bouncer::can('placeman.place.edit'))
+            throw new AccessDeniedHttpException();
 
-        $this->validateFields($request,false);
-        $Branchadmin = Branchadmin::where('user_id', $ID)->first();
-        $Branch = Branch::where('branchadmin_id', $Branchadmin->id)->first();
-
-        $latitude = $request->input('latitude') + 0;
-        $longitude = $request->input('longitude') + 0;
-        $title = $request->input('title');
-        $description = $request->input('description');
-        $logo = $request->input('logo');
-        $Place = new Place();
-        $Place = $Place->find($Branch->place_id);
-        $tel = $request->input('tel');
-        $email = $request->input('email');
-        $email=strtolower($email);
-
-        $address = $request->input('address');
-        $fundationyear = $request->input('fundationyear');
-        $code = $request->input('code');
-        $company_id = $request->input('company_id');
-        $area_id = $request->input('area_id');
-        $name = $request->input('name');
-        $family = $request->input('family');
-        $melliCode = $request->input('mellicode');
-        $mobile = $request->input('mobile');
-
-        $licencePath = $this->SERVERPATH . '/public/licences';
-        $licenceFile = $request->file('licence');
-        $licenceFileURL = "";
-        if ($licenceFile != null) {
-
-            $licenceFile->move($licencePath, $Place->id . ".jpg");
-            $licenceFileURL = "licences\\" . $Place->id . ".jpg";
+        $InputTitle = $request->get('title');
+        $InputLogoigu = $request->file('logoigu');
+        if ($InputLogoigu != null) {
+            $InputLogoigu->move('img/', $InputLogoigu->getClientOriginalName());
+            $InputLogoigu = 'img/' . $InputLogoigu->getClientOriginalName();
+        } else {
+            $InputLogoigu = '';
         }
+        $InputDescription = $request->get('description');
+        $InputActive = $request->get('active');
+        $InputAddress = $request->get('address');
+        $InputArea = $request->get('area');
+        $InputUser = $request->get('user');
+        $InputLatitude = $request->get('latitude');
+        $InputLongitude = $request->get('longitude');
+        $InputVisits = $request->get('visits');;
 
-        $destinationPath = $this->SERVERPATH . '/public/profilepictures';
-        $file = $request->file('photo');
-        $photourl = "";
-        if ($file != null) {
-            $file->move($destinationPath, $Place->id . ".jpg");
-            $photourl = "profilepictures\\" . $Place->id . ".jpg";
-        }
-        $Branchadmin->mellicode = $melliCode;
-        $Branchadmin->name = $name;
-        $Branchadmin->family = $family;
-        $Branchadmin->mob = $mobile;
-        if ($licenceFileURL != "")
-            $Branchadmin->licenceurl = $licenceFileURL;
-        $Branchadmin->save();
 
-        $Place->latitude = $latitude;
-        $Place->longitude = $longitude;
-        $Place->title = $title;
-        $Place->description = $address;
+        $Place = new placeman_place();
+        $Place = $Place->find($id);
+        $Place->title = $InputTitle;
+        if ($InputLogoigu != null)
+            $Place->logo_igu = $InputLogoigu;
+        $Place->description = $InputDescription;
+        $Place->isactive = $InputActive;
+        $Place->address = $InputAddress;
+        $Place->area_fid = $InputArea;
+        $Place->user_fid = $InputUser;
+        $Place->latitude = $InputLatitude;
+        $Place->longitude = $InputLongitude;
+        $Place->visits = $InputVisits;
         $Place->save();
-
-        $Branch->title = $title;
-        $Branch->tel = $tel;
-        $Branch->email = $email;
-        $Branch->address = $address;
-        $Branch->fundationyear = $fundationyear;
-        $Branch->code = $code;
-        if ($photourl != "")
-            $Branch->photourl = $photourl;
-        $Branch->company_id = $company_id;
-        $Branch->area_id = $area_id;
-        $Branch->save();
-        DB::commit();
-        $success['message'] = "اطلاعات با موفقیت ذخیره شد";
-        return response()->json($success, 201);
+        return response()->json(['Data' => $Place], 202);
     }
 
+    public function list(Request $request)
+    {
+        Bouncer::allow('admin')->to('placeman.place.insert');
+        Bouncer::allow('admin')->to('placeman.place.edit');
+        Bouncer::allow('admin')->to('placeman.place.list');
+        Bouncer::allow('admin')->to('placeman.place.view');
+        Bouncer::allow('admin')->to('placeman.place.delete');
+        //if(!Bouncer::can('placeman.place.list'))
+        //throw new AccessDeniedHttpException();
+        $SearchText = $request->get('searchtext');
+        $PlaceQuery = placeman_place::where('id', '>=', '0');
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'title', $SearchText);
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'title', $request->get('title'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'title__sort', 'title', $request->get('title__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'description', $request->get('description'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'description__sort', 'description', $request->get('description__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'isactive', $request->get('active'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'active__sort', 'isactive', $request->get('active__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'address', $request->get('address'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'address__sort', 'address', $request->get('address__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'area_fid', $request->get('area'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'area__sort', 'area_fid', $request->get('area__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'user_fid', $request->get('user'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'user__sort', 'user_fid', $request->get('user__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'latitude', $request->get('latitude'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'latitude__sort', 'latitude', $request->get('latitude__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'longitude', $request->get('longitude'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'longitude__sort', 'longitude', $request->get('longitude__sort'));
+        $PlaceQuery = SweetQueryBuilder::WhereLikeIfNotNull($PlaceQuery, 'visits', $request->get('visits'));
+        $PlaceQuery = SweetQueryBuilder::OrderIfNotNull($PlaceQuery, 'visits__sort', 'visits', $request->get('visits__sort'));
+        $PlacesCount = $PlaceQuery->get()->count();
+        if ($request->get('_onlycount') !== null)
+            return response()->json(['Data' => [], 'RecordCount' => $PlacesCount], 200);
+        $Places = SweetQueryBuilder::setPaginationIfNotNull($PlaceQuery, $request->get('__startrow'), $request->get('__pagesize'))->get();
+        $PlacesArray = [];
+        for ($i = 0; $i < count($Places); $i++) {
+            $PlacesArray[$i] = $Places[$i]->toArray();
+            $AreaField = $Places[$i]->area();
+            $CityField = $AreaField == null ? '' : $AreaField->city();
+            $ProvinceField = $CityField == null ? '' : $CityField->province();
+            $PlacesArray[$i]['areacontent'] = $AreaField == null ? '' : $AreaField->title;
+            $PlacesArray[$i]['citycontent'] = $CityField == null ? '' : $CityField->title;
+            $PlacesArray[$i]['provincecontent'] = $ProvinceField == null ? '' : $ProvinceField->title;
+            $UserField = $Places[$i]->user();
+            $PlacesArray[$i]['usercontent'] = $UserField == null ? '' : $UserField->name;
+        }
+        $Place = $this->getNormalizedList($PlacesArray);
+        return response()->json(['Data' => $Place, 'RecordCount' => $PlacesCount], 200);
+    }
 
+    public function get($id, Request $request)
+    {
+        //if(!Bouncer::can('placeman.place.view'))
+        //throw new AccessDeniedHttpException();
+        $Place = placeman_place::find($id);
+        $PlaceObjectAsArray = $Place->toArray();
+        $AreaField = $Place->area();
+        $CityField = $AreaField == null ? '' : $AreaField->city();
+        $ProvinceField = $CityField == null ? '' : $CityField->province();
+        $PlaceObjectAsArray['areainfo'] = $AreaField == null ? '' : $AreaField;
+        $PlaceObjectAsArray['cityinfo'] = $CityField == null ? '' : $CityField;
+        $PlaceObjectAsArray['provinceinfo'] = $ProvinceField == null ? '' : $ProvinceField;
+        $UserID = $Place->user_fid;
+        $UserObject = $UserID > 0 ? User::find($UserID) : '';
+        $PlaceObjectAsArray['userinfo'] = $this->getNormalizedItem($UserObject->toArray());
+        $Place = $this->getNormalizedItem($PlaceObjectAsArray);
+        return response()->json(['Data' => $Place], 200);
+    }
+
+    public function delete($id, Request $request)
+    {
+        if (!Bouncer::can('placeman.place.delete'))
+            throw new AccessDeniedHttpException();
+        $Place = placeman_place::find($id);
+        $Place->delete();
+        return response()->json(['message' => 'deleted', 'Data' => []], 202);
+    }
 }

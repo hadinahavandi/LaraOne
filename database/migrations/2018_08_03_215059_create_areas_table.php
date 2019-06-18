@@ -13,12 +13,12 @@ class CreateAreasTable extends Migration
      */
     public function up()
     {
-        Schema::create('areas', function (Blueprint $table) {
+        Schema::create('placeman_area', function (Blueprint $table) {
             $table->increments('id');
             $table->string('title');
             $table->integer('city_id')->unsigned();
             $table->timestamps();
-            $table->foreign('city_id')->references('id')->on('cities');
+            $table->foreign('city_id')->references('id')->on('placeman_city');
         });
     }
 

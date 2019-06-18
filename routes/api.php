@@ -18,13 +18,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::get('/tts/contexts','tts\\api\\ContextController@list');
 Route::get('/tts/contexts/{id}','tts\\api\\ContextController@one');
-Route::get('/placeman/places','placeman\\api\\PlaceController@listPlaces');
-Route::get('/placeman/inactiveplaces','placeman\\api\\PlaceController@listInactivePlaces');
-Route::get('/placeman/allplaces','placeman\\api\\PlaceController@listAllPlaces');
-Route::get('/placeman/placeactivation/{branch_id}/{isActive}','placeman\\api\\PlaceController@changePlaceActivation');
-Route::get('/placeman/provinces','placeman\\api\\PlaceController@listProvinces');
-Route::get('/placeman/provinces/{Province_id}','placeman\\api\\PlaceController@listCities');
-Route::post('/placeman/places/add','placeman\\api\\PlaceController@add');
 
 Route::get('contactus/unit', 'contactus\\API\\unitController@list');
 Route::get('contactus/subject', 'contactus\\API\\subjectController@list');
@@ -32,13 +25,58 @@ Route::get('contactus/degree', 'contactus\\API\\degreeController@list');
 Route::get('contactus/degree/{id}', 'contactus\\API\\degreeController@get');
 Route::get('contactus/subject/{id}', 'contactus\\API\\subjectController@get');
 Route::get('contactus/unit/{id}', 'contactus\\API\\unitController@get');
+Route::post('users/sendverificationcode', 'API\\UserController@SendVerificationCode');
+Route::post('users/loginbyphone', 'API\\UserController@VerifyAndLogin');
+
 
 Route::get('posts/post', 'posts\\API\\postController@list');
 Route::get('posts/post/{id}', 'posts\\API\\postController@get');
+
+
 Route::group(['middleware' => 'auth:api'], function() {
+
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/owningtype', 'trapp\\API\\owningtypeController@add');
+    Route::put('trapp/owningtype/{id}', 'trapp\\API\\owningtypeController@update');
+    Route::delete('trapp/owningtype/{id}', 'trapp\\API\\owningtypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/owningtype', 'trapp\\API\\owningtypeController@add');
+    Route::put('trapp/owningtype/{id}', 'trapp\\API\\owningtypeController@update');
+    Route::delete('trapp/owningtype/{id}', 'trapp\\API\\owningtypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/areatype', 'trapp\\API\\areatypeController@add');
+    Route::put('trapp/areatype/{id}', 'trapp\\API\\areatypeController@update');
+    Route::delete('trapp/areatype/{id}', 'trapp\\API\\areatypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/areatype', 'trapp\\API\\areatypeController@add');
+    Route::put('trapp/areatype/{id}', 'trapp\\API\\areatypeController@update');
+    Route::delete('trapp/areatype/{id}', 'trapp\\API\\areatypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/viewtype', 'trapp\\API\\viewtypeController@add');
+    Route::put('trapp/viewtype/{id}', 'trapp\\API\\viewtypeController@update');
+    Route::delete('trapp/viewtype/{id}', 'trapp\\API\\viewtypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/viewtype', 'trapp\\API\\viewtypeController@add');
+    Route::put('trapp/viewtype/{id}', 'trapp\\API\\viewtypeController@update');
+    Route::delete('trapp/viewtype/{id}', 'trapp\\API\\viewtypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/structuretype', 'trapp\\API\\structuretypeController@add');
+    Route::put('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@update');
+    Route::delete('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/structuretype', 'trapp\\API\\structuretypeController@add');
+    Route::put('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@update');
+    Route::delete('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/villa', 'trapp\\API\\villaController@add');
+    Route::put('trapp/villa/{id}', 'trapp\\API\\villaController@update');
+    Route::delete('trapp/villa/{id}', 'trapp\\API\\villaController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/villa', 'trapp\\API\\villaController@add');
+    Route::put('trapp/villa/{id}', 'trapp\\API\\villaController@update');
+    Route::delete('trapp/villa/{id}', 'trapp\\API\\villaController@delete');
+
     Route::post('details', 'API\UserController@details');
-    Route::get('/placeman/branches/userinfo','placeman\\api\\PlaceController@getUserBranch');
-    Route::post('/placeman/places/edit','placeman\\api\\PlaceController@edit');
     Route::get('/common/messages/{versionNumber}','common\\api\\MessageController@getMessages');
     Route::get('/financial/recharge/new','financial\\api\\RechargeController@newTransaction');
     Route::get('contactus/message/{id}', 'contactus\\API\\messageController@get');
@@ -270,12 +308,69 @@ Route::group(['middleware' => 'auth:api'], function() {
 //------------------------------------------------------------------------------------------------------
     Route::get('sas/unittype', 'sas\\API\\unittypeController@list');
     Route::get('sas/unittype/{id}', 'sas\\API\\unittypeController@get');
+
+
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/villaowner', 'trapp\\API\\villaownerController@add');
+    Route::put('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@update');
+    Route::delete('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/villaowner', 'trapp\\API\\villaownerController@add');
+    Route::put('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@update');
+    Route::delete('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/villaowner', 'trapp\\API\\villaownerController@add');
+    Route::put('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@update');
+    Route::delete('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::post('trapp/villaowner', 'trapp\\API\\villaownerController@add');
+    Route::put('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@update');
+    Route::delete('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@delete');
 });
 
-Route::get('/placeman/provinces/{Province_id}/{cityID}','placeman\\api\\PlaceController@listAreas');
-Route::get('/placeman/branches/full/{branch_id}','placeman\\api\\PlaceController@getBranchFullInfo');
-Route::get('/placeman/branches/{branch_id}','placeman\\api\\PlaceController@getBranch');
-Route::get('/placeman/companies','placeman\\api\\PlaceController@listCompanies');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/owningtype', 'trapp\\API\\owningtypeController@list');
+Route::get('trapp/owningtype/{id}', 'trapp\\API\\owningtypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/owningtype', 'trapp\\API\\owningtypeController@list');
+Route::get('trapp/owningtype/{id}', 'trapp\\API\\owningtypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/areatype', 'trapp\\API\\areatypeController@list');
+Route::get('trapp/areatype/{id}', 'trapp\\API\\areatypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/areatype', 'trapp\\API\\areatypeController@list');
+Route::get('trapp/areatype/{id}', 'trapp\\API\\areatypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/viewtype', 'trapp\\API\\viewtypeController@list');
+Route::get('trapp/viewtype/{id}', 'trapp\\API\\viewtypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/viewtype', 'trapp\\API\\viewtypeController@list');
+Route::get('trapp/viewtype/{id}', 'trapp\\API\\viewtypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/structuretype', 'trapp\\API\\structuretypeController@list');
+Route::get('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/structuretype', 'trapp\\API\\structuretypeController@list');
+Route::get('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/villa', 'trapp\\API\\villaController@list');
+Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/villa', 'trapp\\API\\villaController@list');
+Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
+
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/villaowner', 'trapp\\API\\villaownerController@list');
+Route::get('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/villaowner', 'trapp\\API\\villaownerController@list');
+Route::get('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/villaowner', 'trapp\\API\\villaownerController@list');
+Route::get('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@get');
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/villaowner', 'trapp\\API\\villaownerController@list');
+Route::get('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@get');
 
 Route::post('users/login', 'API\UserController@login');
 Route::post('register', 'API\UserController@register');
@@ -293,3 +388,7 @@ Route::delete('contactus/messagereceiver/{id}', 'contactus\\API\\messagereceiver
 //Route::post('contactus/message/{id}', 'contactus\\API\\messageController@add');
 Route::get('contactus/message/find/{id}', 'contactus\\API\\messageController@Find');
 Route::post('contactus/message', 'contactus\\API\\messageController@add');
+require_once('placeman/viewer-api.php');
+require_once('placeman/changer-api.php');
+require_once('trapp/viewer-api.php');
+require_once('trapp/changer-api.php');

@@ -18,8 +18,8 @@ class UnitController extends SweetController
 
 	public function add(Request $request)
     {
-        if(!Bouncer::can('sas.unit.insert'))
-            throw new AccessDeniedHttpException();
+//        if(!Bouncer::can('sas.unit.insert'))
+//            throw new AccessDeniedHttpException();
     
 		$InputName=$request->input('name');
 		$InputLogoigu=$request->file('logoigu');
@@ -112,13 +112,17 @@ class UnitController extends SweetController
         Bouncer::allow('admin')->to('sas.unit.delete');
         //if(!Bouncer::can('sas.unit.list'))
         //throw new AccessDeniedHttpException();
+        $SearchText = $request->get('searchtext');
         $UnitQuery = sas_unit::where('id','>=','0');
+        $UnitQuery = SweetQueryBuilder::WhereLikeIfNotNull($UnitQuery, 'name', $SearchText);
         $UnitQuery =SweetQueryBuilder::WhereLikeIfNotNull($UnitQuery,'name',$request->get('name'));
         $UnitQuery =SweetQueryBuilder::WhereLikeIfNotNull($UnitQuery,'unittype_fid',$request->get('unittype'));
         $UnitQuery =SweetQueryBuilder::WhereLikeIfNotNull($UnitQuery,'is_needsadminapproval',$request->get('needsadminapproval'));
 //        $UnitQuery =SweetQueryBuilder::WhereLikeIfNotNull($UnitQuery,'user__user_fid',$request->get('useruser'));
 //        $UnitQuery =SweetQueryBuilder::WhereLikeIfNotNull($UnitQuery,'admin__user_fid',$request->get('adminuser'));
 //        $UnitQuery =SweetQueryBuilder::WhereLikeIfNotNull($UnitQuery,'security__user_fid',$request->get('securityuser'));
+
+        $UnitQuery = SweetQueryBuilder::setPaginationIfNotNull($UnitQuery, $request->get('__startrow'), $request->get('__pagesize'));
         $Units=$UnitQuery->get();
         $UnitsArray=[];
         for($i=0;$i<count($Units);$i++)
