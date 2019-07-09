@@ -35,4 +35,31 @@ class trapp_villa extends Model
     {
         return $this->belongsTo(trapp_areatype::class, 'areatype_fid')->first();
     }
+
+    public static function getUserVillas($UserID)
+    {
+
+        return trapp_villa::getUserVillaWithPlace()->where('user_fid', '=', $UserID)->get();
+    }
+
+    public static function getUserVillaWithPlace()
+    {
+
+        return placeman_place::join('trapp_villa', 'placeman_place.id', '=', 'trapp_villa.placeman_place_fid');
+    }
+
+    public static function getReservedDaysOfVilla($VillaID)
+    {
+        $orders = trapp_order::where('orderstatus_fid', '=', '2')->where('villa_fid', '=', $VillaID)->get();
+        $days = [];
+        $DayLength = 3600 * 24;
+        for ($i = 0; $i < count($orders); $i++) {
+
+            array_push($days, $orders[$i]->start_date);
+            for ($d = 1; $d < $orders[$i]->duration_num; $d++)
+                array_push($days, $orders[$i]->start_date + $d * $DayLength);
+
+        }
+        return $days;
+    }
 }

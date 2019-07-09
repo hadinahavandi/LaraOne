@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUsersTable extends Migration
+class CreateUsersAppregisterablerolesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,19 +13,11 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('users_appregisterableroles', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
             $table->integer('common_app_fid')->unsigned()->nullable()->index();
             $table->foreign('common_app_fid')->references('id')->on('common_app');
-            $table->string('phone')->default('');
-            $table->string('appuseridentifier')->default('');
-            $table->integer('code')->unsigned()->default(0);
-            $table->boolean('isactive')->default(0);
-            $table->string('codeexpire_time')->default('-1');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->rememberToken();
+            $table->string('rolename');
             $table->timestamps();
         });
     }
@@ -37,6 +29,6 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('users_appregisterableroles');
     }
 }

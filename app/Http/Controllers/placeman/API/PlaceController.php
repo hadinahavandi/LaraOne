@@ -17,10 +17,11 @@ class PlaceController extends SweetController
 
     public function add(Request $request)
     {
-        if (!Bouncer::can('placeman.place.insert'))
-            throw new AccessDeniedHttpException();
+//        if (!Bouncer::can('placeman.place.insert'))
+//            throw new AccessDeniedHttpException();
 
         $InputTitle = $request->input('title');
+        $InputTitle = $InputTitle != null ? $InputTitle : "";
         $InputLogoigu = $request->file('logoigu');
         if ($InputLogoigu != null) {
             $InputLogoigu->move('img/placeman/place', $InputLogoigu->getClientOriginalName());
@@ -29,13 +30,14 @@ class PlaceController extends SweetController
             $InputLogoigu = '';
         }
         $InputDescription = $request->input('description');
-        $InputActive = $request->input('active');
+        $InputDescription = $InputDescription != null ? $InputDescription : "";
+        $InputActive = "0";
         $InputAddress = $request->input('address');
         $InputArea = $request->input('area');
         $InputUser = Auth::user()->getAuthIdentifier();
         $InputLatitude = $request->input('latitude');
         $InputLongitude = $request->input('longitude');
-        $InputVisits = $request->input('visits');
+        $InputVisits = "0";
 
         $Place = placeman_place::create(['title' => $InputTitle, 'logo_igu' => $InputLogoigu, 'description' => $InputDescription, 'isactive' => $InputActive, 'address' => $InputAddress, 'area_fid' => $InputArea, 'user_fid' => $InputUser, 'latitude' => $InputLatitude, 'longitude' => $InputLongitude, 'visits' => $InputVisits, 'deletetime' => -1]);
         return response()->json(['Data' => $Place], 201);

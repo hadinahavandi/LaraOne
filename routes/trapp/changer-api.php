@@ -32,7 +32,20 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('trapp/villa/price/{id}', 'trapp\\API\\villaController@GetOrderPrice');
     Route::get('trapp/villa/reservestart/{id}', 'trapp\\API\\villaController@StartReservePayment');
     Route::post('trapp/villa', 'trapp\\API\\villaController@add');
+    Route::get('trapp/userfullinfo', 'trapp\\API\\villaController@getUserFullInfo');
     Route::put('trapp/villa/{id}', 'trapp\\API\\villaController@update');
     Route::delete('trapp/villa/{id}', 'trapp\\API\\villaController@delete');
+});
+?>
+<?php
+//------------------------------------------------------------------------------------------------------
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::post('trapp/order', 'trapp\\API\\orderController@add');
+    Route::put('trapp/order/{id}', 'trapp\\API\\orderController@update');
+    Route::delete('trapp/order/{id}', 'trapp\\API\\orderController@delete');
+//------------------------------------------------------------------------------------------------------
+    Route::get('trapp/order', 'trapp\\API\\orderController@list');
+    Route::get('trapp/order/villa', 'trapp\\API\\orderController@villaorderslist');
+    Route::get('trapp/order/{id}', 'trapp\\API\\orderController@get');
 });
 ?>

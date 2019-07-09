@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use App\Classes\OnlinePanelClient;
+use App\models\common\common_app;
+use App\models\users\users_appregisterableroles;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Mockery\Exception;
+use Bouncer;
 use Validator;
 
 class UserController extends Controller
@@ -35,7 +38,7 @@ class UserController extends Controller
         $user = Auth::user();
         $success['token'] = $user->createToken('MyApp')->accessToken;
         $Data['sessionkey'] = $success['token'];
-        $Data['displayname'] = request('name');
+        $Data['displayname'] = $user->name;
         $Data['sessionkey'] = $success['token'];
         $Data['access'] = $user->getAbilities();
         $Data['roles'] = $user->getRoles();
@@ -47,12 +50,15 @@ class UserController extends Controller
     {
         $phone = request('phone');
         $code = request('code');
-        $user = User::where('phone', '=', $phone)->first();
+        $appName = request('appName');
+        $role = request('role');
+        $Identifier = "$phone@$appName.$role";
+        $user = User::where('appuseridentifier', '=', $Identifier)->first();
         if (empty($user)) {
             return response()->json(['error' => 'User Not Exists'], 404);
         }
         if ($user->code == $code) {
-//            $user->code="554897";
+            $user->code = "95844";
             $user->codeexpire_time = "-1";
             $user->save();
             Auth::login($user);
@@ -66,21 +72,36 @@ class UserController extends Controller
     public function SendVerificationCode(Request $request)
     {
         $phone = request('phone');
-        $user = User::where('phone', '=', $phone)->first();
+        $appName = trim(request('appName'));
+
+        $app = common_app::where('name', '=', $appName)->first();
+        if (empty($app))
+            return response()->json(['error' => 'App Name Is Invalid'], 404);
+        $role = request('role');
+        $Identifier = "$phone@$appName.$role";
+        $user = User::where('appuseridentifier', '=', $Identifier)->first();
         if (empty($user)) {
-            $request['email'] = "initial@" . $phone . ".user";
+
+            $ValidRoles = users_appregisterableroles::where('common_app_fid', '=', $app->id)->where('rolename', '=', $role)->first();
+            if (empty($ValidRoles))
+                return response()->json(['error' => 'Registration Of This Role Is Invalid at This App'], 403);
+            $request['email'] = "$appName@" . $phone . "$role.init";
+            $request['appuseridentifier'] = $Identifier;
             $request['name'] = $phone;
+            $request['common_app_fid'] = $app->id;
             $request['password'] = $phone;
             $request['c_password'] = $phone;
             $user = $this->makeUserFromRequest($request);
+            Bouncer::assign($role)->to($user);
         }
         $code = mt_rand(10000, 99999);
         $user->code = $code;
         $user->codeexpire_time = time();
         $user->save();
         $opC = new OnlinePanelClient("20002222332458");
-        $opC->sendSMS($phone, $code);
-        return response()->json(['code' => $code], 201);
+        $opC->sendSMS($phone, "کد تایید نرم افزار:" . "
+        " . $code);
+        return response()->json(['phone' => $phone], 201);
 
     }
 
@@ -106,7 +127,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|email',
+//            'email' => 'required|email',
             'password' => 'required',
             'c_password' => 'required|same:password',
             'phone' => 'required|min:11|numeric'

@@ -1,6 +1,8 @@
 <?php
 
 namespace App;
+
+use App\models\common\common_app;
 use Silber\Bouncer\Database\HasRolesAndAbilities;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
@@ -16,8 +18,13 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'phone', 'code'
+        'name', 'email', 'password', 'phone', 'code', 'appuseridentifier', 'common_app_fid'
     ];
+
+    public function CommonApp()
+    {
+        return $this->belongsTo(common_app::class, 'common_app_fid')->first();
+    }
 
     /**
      * The attributes that should be hidden for arrays.

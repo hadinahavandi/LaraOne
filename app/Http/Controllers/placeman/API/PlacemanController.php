@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\placeman\api;
+namespace App\Http\Controllers\placeman\API;
 
 use App\models\placeman\placeman_area;
 use App\models\Branch;

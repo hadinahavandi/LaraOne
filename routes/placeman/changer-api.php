@@ -7,7 +7,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 });
 Route::group(['middleware' => 'auth:api'], function () {
 
-    Route::get('/placeman/branches/userinfo', 'placeman\\api\\PlacemanController@getUserBranch');
-    Route::post('/placeman/places/edit', 'placeman\\api\\PlacemanController@edit');
+    Route::get('/placeman/branches/userinfo', 'placeman\\API\\PlacemanController@getUserBranch');
+    Route::post('/placeman/places/edit', 'placeman\\API\\PlacemanController@edit');
 });
 ?>

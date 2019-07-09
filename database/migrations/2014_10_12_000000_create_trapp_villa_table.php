@@ -34,7 +34,7 @@ class CreateTrappVillaTable extends Migration
             $table->foreign('owningtype_fid')->references('id')->on('trapp_owningtype');
             $table->integer('areatype_fid')->unsigned()->nullable()->index();
             $table->foreign('areatype_fid')->references('id')->on('trapp_areatype');
-            $table->string('description_te', 500);
+            $table->string('description_te', 500)->default('');
             $table->string('documentphoto_igu', 250);
             $table->string('normalprice_prc', 500);
             $table->string('holidayprice_prc', 500);

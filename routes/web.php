@@ -18,7 +18,7 @@ Route::get('/', function () {
 Auth::routes();
 
 //Route::get('/home', 'HomeController@index')->name('home');
-Route::get('/', 'posts\\Web\\postController@index')->name('home');
+//Route::get('/', 'posts\\Web\\postController@index')->name('home');
 Route::get('/posts/post{id}', 'posts\\Web\\postController@get');
 Route::get('/posts/{page}', 'posts\\Web\\postController@list');
 Route::get('/categories', 'tts\\web\\CategoryController@managelist')->name('catmanlist');

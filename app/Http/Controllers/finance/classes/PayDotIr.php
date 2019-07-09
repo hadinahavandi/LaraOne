@@ -19,12 +19,12 @@ class PayDotIr
     {
         try {
             $UserID = Auth::user()->getAuthIdentifier();
-            $api = '5a2f04bec7d74cd1292c20f04b10f97b';
+            $api = '9b92388e553ba7fd7e3a6d3f28facc45';
             $factorNumber = 123;
             $result = PayDotIr::send($api, $amount, $RedirectURL, $factorNumber);
             $result = json_decode($result);
-//            $TransactionID=$result->transId;
-            $TransactionID = "1147";
+            $TransactionID = $result->transId;
+//            $TransactionID = "1147";
             $Transaction = finance_transaction::create(['amount_prc' => $amount, 'transactionid' => $TransactionID, 'status' => 1, 'user_fid' => $UserID, 'description_te' => $Description]);
             return ['finance_transaction' => $Transaction, 'transactionid' => $TransactionID];
         } catch (Exception $ex) {
