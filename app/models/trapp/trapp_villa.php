@@ -36,11 +36,19 @@ class trapp_villa extends Model
         return $this->belongsTo(trapp_areatype::class, 'areatype_fid')->first();
     }
 
+    public function villaOwners()
+    {
+        $place = $this->placemanplace();
+        $user = $place->user_fid;
+        return trapp_villaowner::where('user_fid', '=', $user)->get();
+    }
+
     public static function getUserVillas($UserID)
     {
 
         return trapp_villa::getUserVillaWithPlace()->where('user_fid', '=', $UserID)->get();
     }
+
 
     public static function getUserVillaWithPlace()
     {

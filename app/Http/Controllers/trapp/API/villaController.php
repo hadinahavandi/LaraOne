@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\trapp\API;
 
+use App\Classes\Sweet\SweetDBFile;
 use App\Http\Controllers\common\classes\SweetDateManager;
 use App\Http\Controllers\finance\classes\PayDotIr;
 use App\models\finance\finance_transaction;
@@ -9,6 +10,7 @@ use App\models\placeman\placeman_place;
 use App\models\trapp\trapp_order;
 use App\models\trapp\trapp_villa;
 use App\Http\Controllers\Controller;
+use App\models\trapp\trapp_villaowner;
 use App\Sweet\SweetQueryBuilder;
 use App\Sweet\SweetController;
 use Illuminate\Http\Request;
@@ -18,8 +20,12 @@ use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
+use Validator;
+use Illuminate\Validation\ValidationException;
+
 class VillaController extends SweetController
 {
+    private $ModuleName = 'trapp';
 
     public function add(Request $request)
     {
@@ -40,20 +46,22 @@ class VillaController extends SweetController
         $InputOwningtype = $request->input('owningtype');
         $InputAreatype = $request->input('areatype');
         $InputDescriptionte = $request->input('descriptionte');
-        $InputDocumentphotoigu = $request->file('documentphotoigu');
-        if ($InputDocumentphotoigu != null) {
-            $InputDocumentphotoigu->move('img/trapp/villa', $InputDocumentphotoigu->getClientOriginalName());
-            $InputDocumentphotoigu = 'img/trapp/villa/' . $InputDocumentphotoigu->getClientOriginalName();
-        } else {
-            $InputDocumentphotoigu = '';
-        }
         $InputNormalpriceprc = $request->input('normalpriceprc');
         $InputHolidaypriceprc = $request->input('holidaypriceprc');
         $InputWeeklyoffnum = $request->input('weeklyoffnum');
         $InputMonthlyoffnum = $request->input('monthlyoffnum');
 
-        $Villa = trapp_villa::create(['roomcount_num' => $InputRoomcountnum, 'capacity_num' => $InputCapacitynum, 'maxguests_num' => $InputMaxguestsnum, 'structurearea_num' => $InputStructureareanum, 'totalarea_num' => $InputTotalareanum, 'placeman_place_fid' => $InputPlacemanplace, 'is_addedbyowner' => $InputAddedbyowner, 'viewtype_fid' => $InputViewtype, 'structuretype_fid' => $InputStructuretype, 'is_fulltimeservice' => $InputFulltimeservice, 'timestart_clk' => $InputTimestartclk, 'owningtype_fid' => $InputOwningtype, 'areatype_fid' => $InputAreatype, 'description_te' => $InputDescriptionte, 'documentphoto_igu' => $InputDocumentphotoigu, 'normalprice_prc' => $InputNormalpriceprc, 'holidayprice_prc' => $InputHolidaypriceprc, 'weeklyoff_num' => $InputWeeklyoffnum, 'monthlyoff_num' => $InputMonthlyoffnum, 'deletetime' => -1]);
+        $Villa = trapp_villa::create(['documentphoto_igu' => '', 'roomcount_num' => $InputRoomcountnum, 'capacity_num' => $InputCapacitynum, 'maxguests_num' => $InputMaxguestsnum, 'structurearea_num' => $InputStructureareanum, 'totalarea_num' => $InputTotalareanum, 'placeman_place_fid' => $InputPlacemanplace, 'is_addedbyowner' => $InputAddedbyowner, 'viewtype_fid' => $InputViewtype, 'structuretype_fid' => $InputStructuretype, 'is_fulltimeservice' => $InputFulltimeservice, 'timestart_clk' => $InputTimestartclk, 'owningtype_fid' => $InputOwningtype, 'areatype_fid' => $InputAreatype, 'description_te' => $InputDescriptionte, 'normalprice_prc' => $InputNormalpriceprc, 'holidayprice_prc' => $InputHolidaypriceprc, 'weeklyoff_num' => $InputWeeklyoffnum, 'monthlyoff_num' => $InputMonthlyoffnum, 'deletetime' => -1]);
+
+        $InputDocumentphotoigu = new SweetDBFile(SweetDBFile::$GENERAL_DATA_TYPE_IMAGE, $this->ModuleName, 'villa', 'documentphoto', $Villa->id, 'jpg');
+        $Villa->documentphoto_igu = $InputDocumentphotoigu->uploadFromRequest($request->file('documentphotoigu'));
+        $Villa->save();
         return response()->json(['Data' => $Villa], 201);
+    }
+
+    private function _getPhotoLocationFromID($ID)
+    {
+        return 'img/trapp/villa/villa-' . $ID;
     }
 
     public function update($id, Request $request)
@@ -77,8 +85,8 @@ class VillaController extends SweetController
         $InputDescriptionte = $request->get('descriptionte');
         $InputDocumentphotoigu = $request->file('documentphotoigu');
         if ($InputDocumentphotoigu != null) {
-            $InputDocumentphotoigu->move('img/', $InputDocumentphotoigu->getClientOriginalName());
-            $InputDocumentphotoigu = 'img/' . $InputDocumentphotoigu->getClientOriginalName();
+            $InputDocumentphotoigu->move($this->_getPhotoLocationFromID($id), 'main.jpg');
+            $InputDocumentphotoigu = $this->_getPhotoLocationFromID($id) . '/main.jpg';
         } else {
             $InputDocumentphotoigu = '';
         }
@@ -116,21 +124,35 @@ class VillaController extends SweetController
 
     public function list(Request $request)
     {
+        return $this->_baselist('1', $request);
+    }
+
+    public function inactiveList(Request $request)
+    {
+        return $this->_baselist('0', $request);
+    }
+
+    private function _baselist($isActive, Request $request)
+    {
         Bouncer::allow('admin')->to('trapp.villa.insert');
         Bouncer::allow('admin')->to('trapp.villa.edit');
         Bouncer::allow('admin')->to('trapp.villa.list');
         Bouncer::allow('admin')->to('trapp.villa.view');
         Bouncer::allow('admin')->to('trapp.villa.delete');
 
-
+        $SortsTEST = [];
 //        Auth::user()->getAuthIdentifier();
         //if(!Bouncer::can('trapp.villa.list'))
         //throw new AccessDeniedHttpException();
         $SearchText = $request->get('searchtext');
+        $UserLatitude = $request->get('userlatitude');
+        $UserLongitude = $request->get('userlongitude');
 //        $VillaQuery = trapp_villa::where('id','>=','0');
         $VillaQuery = trapp_villa::join('placeman_place', 'placeman_place.id', '=', 'trapp_villa.placeman_place_fid')
             ->join('placeman_area', 'placeman_area.id', '=', 'placeman_place.area_fid')
             ->join('placeman_city', 'placeman_city.id', '=', 'placeman_area.city_id');
+        $VillaQuery = $VillaQuery->join('trapp_villaowner', 'trapp_villaowner.user_fid', '=', 'placeman_place.user_fid');
+        $VillaQuery = $VillaQuery->where('placeman_place.isactive', '=', $isActive);
         if ($request->get('selectedstartdate') != '' && $request->get('days') != '') {
             $DateStart = $request->get('selectedstartdate');
             $days = $request->get('days');
@@ -139,6 +161,27 @@ class VillaController extends SweetController
             $DateEnd = $DateStart + $days * $DayLength;
             $VillaQuery = $VillaQuery->whereRaw("(SELECT COUNT(*) FROM trapp_order o WHERE o.orderstatus_fid=2 and o.villa_fid=trapp_villa.id and o.start_date>=$DateStart and o.start_date+(o.duration_num*86400)<=$DateEnd)=0");
 
+        }
+        $DistanceField = null;
+        if ($UserLatitude > 0 && $UserLatitude > 0) {
+            $validator = Validator::make($request->all(), [
+                'userlongitude' => 'required|min:11|numeric',
+                'userlatitude' => 'required|min:11|numeric'
+            ]);
+            if ($validator->fails())
+                throw new ValidationException($validator);
+            $Distance = "
+        ( 6371 * acos( cos( radians($UserLatitude) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians($UserLongitude) ) + sin( radians($UserLatitude) ) * sin( radians( latitude ) ) ) ) AS `distance`
+        ";
+            $DistanceField = DB::raw($Distance);
+            if ($request->get('distance__sort') != null) {
+                $VillaQuery = $VillaQuery->orderByRaw('distance');
+                $SortsTEST['dist'] = 1;
+            }
+        }
+        if ($request->get('normalpriceprc__sort') != null) {
+            $VillaQuery = $VillaQuery->orderBy("normalprice_prc", 'asc');
+            $SortsTEST['normalpriceprc__sort'] = 1;
         }
 //        $VillaQuery =SweetQueryBuilder::WhereLikeIfNotNull($VillaQuery,'roomcount_num',$SearchText);
         $VillaQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaQuery, 'roomcount_num', $request->get('roomcountnum'));
@@ -171,17 +214,19 @@ class VillaController extends SweetController
         $VillaQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaQuery, 'description_te', $request->get('descriptionte'));
         $VillaQuery = SweetQueryBuilder::OrderIfNotNull($VillaQuery, 'descriptionte__sort', 'description_te', $request->get('descriptionte__sort'));
         $VillaQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaQuery, 'normalprice_prc', $request->get('normalpriceprc'));
-        $VillaQuery = SweetQueryBuilder::OrderIfNotNull($VillaQuery, 'normalpriceprc__sort', 'normalprice_prc', $request->get('normalpriceprc__sort'));
         $VillaQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaQuery, 'holidayprice_prc', $request->get('holidaypriceprc'));
         $VillaQuery = SweetQueryBuilder::OrderIfNotNull($VillaQuery, 'holidaypriceprc__sort', 'holidayprice_prc', $request->get('holidaypriceprc__sort'));
         $VillaQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaQuery, 'weeklyoff_num', $request->get('weeklyoffnum'));
         $VillaQuery = SweetQueryBuilder::OrderIfNotNull($VillaQuery, 'weeklyoffnum__sort', 'weeklyoff_num', $request->get('weeklyoffnum__sort'));
         $VillaQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaQuery, 'monthlyoff_num', $request->get('monthlyoffnum'));
         $VillaQuery = SweetQueryBuilder::OrderIfNotNull($VillaQuery, 'monthlyoffnum__sort', 'monthlyoff_num', $request->get('monthlyoffnum__sort'));
-        $VillasCount = $VillaQuery->get(['trapp_villa.*'])->count();
+        $SelectFields = ['trapp_villaowner.*', 'trapp_villaowner.id AS villaownerid', 'trapp_villa.*'];
+        if ($DistanceField != null)
+            array_push($SelectFields, $DistanceField);
+        $VillasCount = $VillaQuery->get($SelectFields)->count();
         if ($request->get('_onlycount') !== null)
             return response()->json(['Data' => [], 'RecordCount' => $VillasCount], 200);
-        $Villas = SweetQueryBuilder::setPaginationIfNotNull($VillaQuery, $request->get('__startrow'), $request->get('__pagesize'))->get(['trapp_villa.*']);
+        $Villas = SweetQueryBuilder::setPaginationIfNotNull($VillaQuery, $request->get('__startrow'), $request->get('__pagesize'))->get($SelectFields);
         $VillasArray = [];
         for ($i = 0; $i < count($Villas); $i++) {
             $VillasArray[$i] = $Villas[$i]->toArray();
@@ -197,7 +242,7 @@ class VillaController extends SweetController
             $VillasArray[$i]['areatypecontent'] = $AreatypeField == null ? '' : $AreatypeField->name;
         }
         $Villa = $this->getNormalizedList($VillasArray);
-        return response()->json(['Data' => $Villa, 'RecordCount' => $VillasCount], 200);
+        return response()->json(['Data' => $Villa, 'ss' => $SortsTEST, 'RecordCount' => $VillasCount], 200);
     }
 
     public function get($id, Request $request)
@@ -212,12 +257,16 @@ class VillaController extends SweetController
         $area = $PlacemanplaceObject->area();
         $city = $area->city();
         $province = $city->province();
+
         $VillaObjectAsArray['placemanplaceinfo']['areainfo'] = $this->getNormalizedItem($area->toArray());
         $VillaObjectAsArray['placemanplaceinfo']['cityinfo'] = $this->getNormalizedItem($city->toArray());
         $VillaObjectAsArray['placemanplaceinfo']['provinceinfo'] = $this->getNormalizedItem($province->toArray());
         $ViewtypeObject = $Villa->viewtype();
         $ViewtypeObject = $ViewtypeObject == null ? '' : $ViewtypeObject;
         $VillaObjectAsArray['viewtypeinfo'] = $this->getNormalizedItem($ViewtypeObject->toArray());
+        $VillaOwnersObject = $Villa->villaOwners()[0];
+
+        $VillaObjectAsArray['villaowner'] = $this->getNormalizedItem($VillaOwnersObject->toArray());
         $StructuretypeObject = $Villa->structuretype();
         $StructuretypeObject = $StructuretypeObject == null ? '' : $StructuretypeObject;
         $VillaObjectAsArray['structuretypeinfo'] = $this->getNormalizedItem($StructuretypeObject->toArray());
@@ -227,6 +276,7 @@ class VillaController extends SweetController
         $AreatypeObject = $Villa->areatype();
         $AreatypeObject = $AreatypeObject == null ? '' : $AreatypeObject;
         $VillaObjectAsArray['areatypeinfo'] = $this->getNormalizedItem($AreatypeObject->toArray());
+        $VillaObjectAsArray['reservedbyuser'] = $this->villaIsReservedByCurrentUser($id);
         $Villa = $this->getNormalizedItem($VillaObjectAsArray);
         return response()->json(['Data' => $Villa], 200);
     }
@@ -303,12 +353,23 @@ class VillaController extends SweetController
         return view("trapp/testPayment", ["data" => $OrderID]);
     }
 
+    public function villaIsReservedByCurrentUser($VillaID)
+    {
+//        return true;
+        $user = Auth::user();
+        $UserPlaces = trapp_order::where('user_fid', '=', $user->id);
+        $UserPlaces = $UserPlaces->where('villa_fid', '=', $VillaID);
+        $UserPlaces = $UserPlaces->where('orderstatus_fid', '=', 2)->get();
+        return !($UserPlaces->isEmpty());
+    }
+
     public function getUserFullInfo(Request $request)
     {
         $user = Auth::user();
         $UserPlaces = placeman_place::where('user_fid', '=', $user->id)->get();
         $UserVillas = trapp_villa::getUserVillas($user->id);
-        return response()->json(['Data' => ['places' => $UserPlaces, 'villas' => $UserVillas]], 202);
+        $UserVillaOwners = trapp_villaowner::getUserVillaOwners($user->id);
+        return response()->json(['Data' => ['places' => $UserPlaces, 'villas' => $UserVillas, 'owners' => $UserVillaOwners]], 202);
 
     }
 
@@ -318,6 +379,7 @@ class VillaController extends SweetController
         return response()->json(['Data' => ['dates' => $days]], 202);
 
     }
+
     public function delete($id, Request $request)
     {
         if (!Bouncer::can('trapp.villa.delete'))

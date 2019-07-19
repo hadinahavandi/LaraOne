@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Classes\KavehNegarClient;
 use App\Classes\OnlinePanelClient;
 use App\models\common\common_app;
 use App\models\users\users_appregisterableroles;
@@ -27,6 +28,7 @@ class UserController extends Controller
     public function login()
     {
         if (Auth::attempt(['email' => request('name'), 'password' => request('password')])) {
+//            Bouncer::assign('admin')->to(Auth::user());
             return $this->createTokenAndGetUserInfo();
         } else {
             return response()->json(['error' => 'Unauthorised'], 401);
@@ -87,7 +89,7 @@ class UserController extends Controller
                 return response()->json(['error' => 'Registration Of This Role Is Invalid at This App'], 403);
             $request['email'] = "$appName@" . $phone . "$role.init";
             $request['appuseridentifier'] = $Identifier;
-            $request['name'] = $phone;
+//            $request['name'] = $phone;
             $request['common_app_fid'] = $app->id;
             $request['password'] = $phone;
             $request['c_password'] = $phone;
@@ -98,10 +100,10 @@ class UserController extends Controller
         $user->code = $code;
         $user->codeexpire_time = time();
         $user->save();
-        $opC = new OnlinePanelClient("20002222332458");
-        $opC->sendSMS($phone, "کد تایید نرم افزار:" . "
+        $opC = new OnlinePanelClient("50002333333321");
+        $opC->sendMessage($phone, "کد تایید نرم افزار:" . "
         " . $code);
-        return response()->json(['phone' => $phone], 201);
+        return response()->json(['cd' => $code, 'phone' => $phone], 201);
 
     }
 

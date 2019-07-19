@@ -1,5 +1,4 @@
 <?php
-
 namespace App\models\placeman;
 
 use App\User;

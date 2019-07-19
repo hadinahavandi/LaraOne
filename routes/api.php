@@ -392,3 +392,5 @@ require_once('placeman/viewer-api.php');
 require_once('placeman/changer-api.php');
 require_once('trapp/viewer-api.php');
 require_once('trapp/changer-api.php');
+require_once('finance/viewer-api.php');
+require_once('finance/changer-api.php');

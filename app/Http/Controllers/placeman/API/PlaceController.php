@@ -83,6 +83,21 @@ class PlaceController extends SweetController
         return response()->json(['Data' => $Place], 202);
     }
 
+    public function activate($id, $type, Request $request)
+    {
+        if (!Bouncer::can('placeman.place.edit'))
+            throw new AccessDeniedHttpException();
+
+        $Place = new placeman_place();
+        $Place = $Place->find($id);
+        if ($type == 1) {
+            $Place->isactive = '1';
+        } else
+            $Place->isactive = '0';
+        $Place->save();
+        return response()->json(['Data' => $Place], 202);
+    }
+
     public function list(Request $request)
     {
         Bouncer::allow('admin')->to('placeman.place.insert');

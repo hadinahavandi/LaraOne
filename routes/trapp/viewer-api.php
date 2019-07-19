@@ -14,10 +14,6 @@ Route::get('trapp/viewtype/{id}', 'trapp\\API\\viewtypeController@get');
 //------------------------------------------------------------------------------------------------------
 Route::get('trapp/structuretype', 'trapp\\API\\structuretypeController@list');
 Route::get('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@get');
-?><?php
-//------------------------------------------------------------------------------------------------------
-
-Route::get('trapp/villa', 'trapp\\API\\villaController@list');
-Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
-Route::get('trapp/villa/{id}/reserveddays', 'trapp\\API\\villaController@getReservedDaysOfVilla');
+?>
+<?php
 ?>

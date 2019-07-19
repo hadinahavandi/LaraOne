@@ -10,20 +10,10 @@ namespace App\Classes;
 
 use SoapClient;
 
-class OnlinePanelClient
+class OnlinePanelClient extends NumberMessagingPanelClient
 {
-    private $FromNumber = "50002333333321";
 
-    /**
-     * OnlinePanelClient constructor.
-     * @param string $FromNumber
-     */
-    public function __construct(string $FromNumber)
-    {
-        $this->FromNumber = $FromNumber;
-    }
-
-    public function sendSMS($ToNumber, $Message)
+    public function sendMessage($ToNumber, $Message)
     {
         ini_set("soap.wsdl_cache_enabled", "0");
         $user = "9367356253";
@@ -32,12 +22,12 @@ class OnlinePanelClient
 
         $client = new SoapClient("http://87.107.121.52/post/send.asmx?wsdl");
 
-        $getcredit_parameters = array(
-            "username" => $user,
-            "password" => $pass
-        );
-        $credit = $client->GetCredit($getcredit_parameters)->GetCreditResult;
-        echo "Credit: " . $credit . "<br />";
+//        $getcredit_parameters = array(
+//            "username" => $user,
+//            "password" => $pass
+//        );
+//        $credit = $client->GetCredit($getcredit_parameters)->GetCreditResult;
+//        echo "Credit: " . $credit . "<br />";
 
         $encoding = "UTF-8";//CP1256, CP1252
         $textMessage = iconv($encoding, 'UTF-8//TRANSLIT', $Message);
@@ -45,7 +35,7 @@ class OnlinePanelClient
         $sendsms_parameters = array(
             'username' => $user,
             'password' => $pass,
-            'from' => $this->FromNumber,
+            'from' => $this->getFromNumber(),
             'to' => array($ToNumber),
             'text' => $textMessage,
             'isflash' => false,

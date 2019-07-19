@@ -12,8 +12,13 @@ Route::get('/placeman/companies', 'placeman\\API\\PlacemanController@listCompani
 //------------------------------------------------------------------------------------------------------
 Route::get('placeman/place', 'placeman\\API\\PlaceController@list');
 Route::get('placeman/place/{id}', 'placeman\\API\\PlaceController@get');
+
+?><?php
+//------------------------------------------------------------------------------------------------------
+Route::get('placeman/placephoto', 'placeman\\API\\placephotoController@list');
+Route::get('placeman/placephoto/{id}', 'placeman\\API\\placephotoController@get');
+?><?php
+//------------------------------------------------------------------------------------------------------
 Route::get('placeman/phototype', 'placeman\\API\\phototypeController@list');
 Route::get('placeman/phototype/{id}', 'placeman\\API\\phototypeController@get');
-
-
 ?>
