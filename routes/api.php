@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-header('Access-Control-Allow-Origin: *');
+//header('Access-Control-Allow-Origin: http://localhost:3000');
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -394,3 +394,5 @@ require_once('trapp/viewer-api.php');
 require_once('trapp/changer-api.php');
 require_once('finance/viewer-api.php');
 require_once('finance/changer-api.php');
+require_once('common/viewer-api.php');
+require_once('common/changer-api.php');

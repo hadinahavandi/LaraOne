@@ -1,41 +1,50 @@
 <?php
-
 namespace App\Http\Controllers\trapp\API;
-
 use App\models\trapp\trapp_owningtype;
 use App\Http\Controllers\Controller;
 use App\Sweet\SweetQueryBuilder;
 use App\Sweet\SweetController;
 use Illuminate\Http\Request;
+use App\Classes\Sweet\SweetDBFile;
+use Illuminate\Validation\ValidationException;
+use Validator;
 use Bouncer;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use App\Http\Requests\trapp\trapp_owningtypeAddRequest;
+use App\Http\Requests\trapp\trapp_owningtypeUpdateRequest;
 
 class OwningtypeController extends SweetController
 {
+    private $ModuleName = 'trapp';
 
-    public function add(Request $request)
+    public function add(trapp_owningtypeAddRequest $request)
     {
         if (!Bouncer::can('trapp.owningtype.insert'))
             throw new AccessDeniedHttpException();
+        $request->validated();
 
-        $InputName = $request->input('name');
+        $InputName = $request->input('name', ' ');
+
         $Owningtype = trapp_owningtype::create(['name' => $InputName, 'deletetime' => -1]);
         return response()->json(['Data' => $Owningtype], 201);
     }
 
-    public function update($id, Request $request)
+    public function update($id, trapp_owningtypeUpdateRequest $request)
     {
         if (!Bouncer::can('trapp.owningtype.edit'))
             throw new AccessDeniedHttpException();
+        $request->setIsUpdate(true);
+        $request->validated();
 
-        $InputName = $request->get('name');
+        $InputName = $request->get('name', ' ');;
+            
+    
         $Owningtype = new trapp_owningtype();
         $Owningtype = $Owningtype->find($id);
         $Owningtype->name = $InputName;
         $Owningtype->save();
         return response()->json(['Data' => $Owningtype], 202);
     }
-
     public function list(Request $request)
     {
         Bouncer::allow('admin')->to('trapp.owningtype.insert');
@@ -53,7 +62,7 @@ class OwningtypeController extends SweetController
         $OwningtypesCount = $OwningtypeQuery->get()->count();
         if ($request->get('_onlycount') !== null)
             return response()->json(['Data' => [], 'RecordCount' => $OwningtypesCount], 200);
-        $Owningtypes = SweetQueryBuilder::setPaginationIfNotNull($OwningtypeQuery, $request->get('__startrow'), $request->get('__ esize'))->get();
+        $Owningtypes = SweetQueryBuilder::setPaginationIfNotNull($OwningtypeQuery, $request->get('__startrow'), $request->get('__pagesize'))->get();
         $OwningtypesArray = [];
         for ($i = 0; $i < count($Owningtypes); $i++) {
             $OwningtypesArray[$i] = $Owningtypes[$i]->toArray();

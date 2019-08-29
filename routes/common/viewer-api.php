@@ -1,5 +1,5 @@
 <?php
 //------------------------------------------------------------------------------------------------------
-Route::get('common/date', 'common\\API\\dateController@list');
-Route::get('common/date/{id}', 'common\\API\\dateController@get');
+Route::get('common/date', 'common\\api\\dateController@list');
+Route::get('common/date/{id}', 'common\\api\\dateController@get');
 ?>

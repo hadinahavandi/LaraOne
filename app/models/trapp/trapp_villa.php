@@ -2,7 +2,9 @@
 
 namespace App\models\trapp;
 
+use App\Http\Controllers\trapp\classes\villaOption;
 use App\models\placeman\placeman_place;
+use App\models\placeman\placeman_placephoto;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,6 +45,17 @@ class trapp_villa extends Model
         return trapp_villaowner::where('user_fid', '=', $user)->get();
     }
 
+    public function photos()
+    {
+        return placeman_placephoto::where('place_fid', '=', $this->placeman_place_fid)->get();
+    }
+
+    public function options()
+    {
+        $Options = villaOption::getVillaOptions($this->id);
+        return $Options;
+    }
+
     public static function getUserVillas($UserID)
     {
 
@@ -70,4 +83,14 @@ class trapp_villa extends Model
         }
         return $days;
     }
+
+    public static function getIsVillaReservable($VillaID, $StartDate, $Duration)
+    {
+        $DayLength = 3600 * 24;
+        $EndDate = (int)$StartDate + (int)$DayLength * ($Duration - 1);
+        $NumOfOrdersInRange = trapp_order::where('orderstatus_fid', '=', '2')->where('villa_fid', '=', $VillaID)->where('start_date', '<=', $EndDate)->whereRaw("start_date+((duration_num-1)*$DayLength)>=$StartDate")->get()->count();
+        return $NumOfOrdersInRange == 0;
+    }
+
+
 }

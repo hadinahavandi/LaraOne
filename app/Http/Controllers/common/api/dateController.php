@@ -1,51 +1,54 @@
 <?php
-
 namespace App\Http\Controllers\common\API;
-
 use App\models\common\common_date;
 use App\Http\Controllers\Controller;
 use App\Sweet\SweetQueryBuilder;
 use App\Sweet\SweetController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\common\classes\SweetDateManager;
+use App\Classes\Sweet\SweetDBFile;
+use Illuminate\Validation\ValidationException;
+use Validator;
 use Bouncer;
-use Illuminate\Support\Facades\Auth;
-use Morilog\Jalali\Jalalian;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use App\Http\Requests\common\common_dateAddRequest;
+use App\Http\Requests\common\common_dateUpdateRequest;
 
 class DateController extends SweetController
 {
+    private $ModuleName = 'common';
 
-    public function add(Request $request)
+    public function add(common_dateAddRequest $request)
     {
         if (!Bouncer::can('common.date.insert'))
             throw new AccessDeniedHttpException();
-        Auth::user()->getAuthIdentifier();
-        $InputDaydate = $request->input('daydate');
-        $jDate = Jalalian::fromFormat('Y/m/d', $InputDaydate)->getTimestamp();;
+        $request->validated();
 
-        $InputFactordbl = $request->input('factordbl');
+        $InputDaydate = SweetDateManager::getTimeStampFromString($request->input('daydate', ' '));
+        $InputFactordbl = $request->input('factordbl', 0);
 
-        $Date = common_date::create(['day_date' => $jDate, 'factor_dbl' => $InputFactordbl, 'deletetime' => -1]);
+        $Date = common_date::create(['day_date' => $InputDaydate, 'factor_dbl' => $InputFactordbl, 'deletetime' => -1]);
         return response()->json(['Data' => $Date], 201);
     }
 
-    public function update($id, Request $request)
+    public function update($id, common_dateUpdateRequest $request)
     {
         if (!Bouncer::can('common.date.edit'))
             throw new AccessDeniedHttpException();
+        $request->setIsUpdate(true);
+        $request->validated();
 
-        $InputDaydate = $request->get('daydate');
-        $InputFactordbl = $request->get('factordbl');;
-        $jDate = Jalalian::fromFormat('Y/m/d', $InputDaydate)->getTimestamp();
+        $InputDaydate = SweetDateManager::getTimeStampFromString($request->get('daydate', ' '));
+        $InputFactordbl = $request->get('factordbl', 0);;
+
 
         $Date = new common_date();
         $Date = $Date->find($id);
-        $Date->day_date = $jDate;
+        $Date->day_date = $InputDaydate;
         $Date->factor_dbl = $InputFactordbl;
         $Date->save();
         return response()->json(['Data' => $Date], 202);
     }
-
     public function list(Request $request)
     {
         Bouncer::allow('admin')->to('common.date.insert');
@@ -69,6 +72,7 @@ class DateController extends SweetController
         $DatesArray = [];
         for ($i = 0; $i < count($Dates); $i++) {
             $DatesArray[$i] = $Dates[$i]->toArray();
+            $DatesArray[$i]['day_date'] = SweetDateManager::getStringFromTimeStamp($DatesArray[$i]['day_date']);
         }
         $Date = $this->getNormalizedList($DatesArray);
         return response()->json(['Data' => $Date, 'RecordCount' => $DatesCount], 200);
@@ -80,6 +84,7 @@ class DateController extends SweetController
         //throw new AccessDeniedHttpException();
         $Date = common_date::find($id);
         $DateObjectAsArray = $Date->toArray();
+        $DateObjectAsArray['day_date'] = SweetDateManager::getStringFromTimeStamp($DateObjectAsArray['day_date']);
         $Date = $this->getNormalizedItem($DateObjectAsArray);
         return response()->json(['Data' => $Date], 200);
     }

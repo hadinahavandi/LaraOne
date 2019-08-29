@@ -5,6 +5,8 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Request;
+use Log;
 
 class Handler extends ExceptionHandler
 {
@@ -35,6 +37,10 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
+        Log::info($exception->getMessage(), [
+            'url' => Request::url(),
+            'input' => Request::all()
+        ]);
         parent::report($exception);
     }
 

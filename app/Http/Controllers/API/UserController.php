@@ -27,6 +27,7 @@ class UserController extends Controller
      */
     public function login()
     {
+//        return response()->json(['Data' => 'ok'], 200);
         if (Auth::attempt(['email' => request('name'), 'password' => request('password')])) {
 //            Bouncer::assign('admin')->to(Auth::user());
             return $this->createTokenAndGetUserInfo();
@@ -75,7 +76,7 @@ class UserController extends Controller
     {
         $phone = request('phone');
         $appName = trim(request('appName'));
-
+        $logintype = request('logintype');
         $app = common_app::where('name', '=', $appName)->first();
         if (empty($app))
             return response()->json(['error' => 'App Name Is Invalid'], 404);
@@ -83,7 +84,8 @@ class UserController extends Controller
         $Identifier = "$phone@$appName.$role";
         $user = User::where('appuseridentifier', '=', $Identifier)->first();
         if (empty($user)) {
-
+            if ($logintype === 'login')
+                return response()->json(['message' => 'کاربری با این اطلاعات پیدا نشد.'], 422);
             $ValidRoles = users_appregisterableroles::where('common_app_fid', '=', $app->id)->where('rolename', '=', $role)->first();
             if (empty($ValidRoles))
                 return response()->json(['error' => 'Registration Of This Role Is Invalid at This App'], 403);
@@ -97,13 +99,14 @@ class UserController extends Controller
             Bouncer::assign($role)->to($user);
         }
         $code = mt_rand(10000, 99999);
+//        $code=12345;
         $user->code = $code;
         $user->codeexpire_time = time();
         $user->save();
-        $opC = new OnlinePanelClient("50002333333321");
-        $opC->sendMessage($phone, "کد تایید نرم افزار:" . "
-        " . $code);
-        return response()->json(['cd' => $code, 'phone' => $phone], 201);
+//        $opC = new OnlinePanelClient("50002333333321");
+        $opC = new KavehNegarClient("1000800808");
+        $opC->sendTokenMessage($phone, $code, '', '', 'verify');
+        return response()->json(['phone' => $phone], 201);
 
     }
 

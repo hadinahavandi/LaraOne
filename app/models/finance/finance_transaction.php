@@ -14,4 +14,9 @@ class finance_transaction extends Model
     {
         return $this->belongsTo(User::class, 'user_fid')->first();
     }
+
+    public static function getUserBalance($UserID)
+    {
+        return finance_transaction::where('status', '=', '3')->where('user_fid', '=', $UserID)->sum('amount_prc');
+    }
 }

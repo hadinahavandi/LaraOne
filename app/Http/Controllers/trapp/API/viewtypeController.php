@@ -1,41 +1,50 @@
 <?php
-
 namespace App\Http\Controllers\trapp\API;
-
 use App\models\trapp\trapp_viewtype;
 use App\Http\Controllers\Controller;
 use App\Sweet\SweetQueryBuilder;
 use App\Sweet\SweetController;
 use Illuminate\Http\Request;
+use App\Classes\Sweet\SweetDBFile;
+use Illuminate\Validation\ValidationException;
+use Validator;
 use Bouncer;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use App\Http\Requests\trapp\trapp_viewtypeAddRequest;
+use App\Http\Requests\trapp\trapp_viewtypeUpdateRequest;
 
 class ViewtypeController extends SweetController
 {
+    private $ModuleName = 'trapp';
 
-    public function add(Request $request)
+    public function add(trapp_viewtypeAddRequest $request)
     {
         if (!Bouncer::can('trapp.viewtype.insert'))
             throw new AccessDeniedHttpException();
+        $request->validated();
 
-        $InputName = $request->input('name');
+        $InputName = $request->input('name', ' ');
+
         $Viewtype = trapp_viewtype::create(['name' => $InputName, 'deletetime' => -1]);
         return response()->json(['Data' => $Viewtype], 201);
     }
 
-    public function update($id, Request $request)
+    public function update($id, trapp_viewtypeUpdateRequest $request)
     {
         if (!Bouncer::can('trapp.viewtype.edit'))
             throw new AccessDeniedHttpException();
+        $request->setIsUpdate(true);
+        $request->validated();
 
-        $InputName = $request->get('name');
+        $InputName = $request->get('name', ' ');;
+            
+    
         $Viewtype = new trapp_viewtype();
         $Viewtype = $Viewtype->find($id);
         $Viewtype->name = $InputName;
         $Viewtype->save();
         return response()->json(['Data' => $Viewtype], 202);
     }
-
     public function list(Request $request)
     {
         Bouncer::allow('admin')->to('trapp.viewtype.insert');
@@ -53,7 +62,7 @@ class ViewtypeController extends SweetController
         $ViewtypesCount = $ViewtypeQuery->get()->count();
         if ($request->get('_onlycount') !== null)
             return response()->json(['Data' => [], 'RecordCount' => $ViewtypesCount], 200);
-        $Viewtypes = SweetQueryBuilder::setPaginationIfNotNull($ViewtypeQuery, $request->get('__startrow'), $request->get('__ esize'))->get();
+        $Viewtypes = SweetQueryBuilder::setPaginationIfNotNull($ViewtypeQuery, $request->get('__startrow'), $request->get('__pagesize'))->get();
         $ViewtypesArray = [];
         for ($i = 0; $i < count($Viewtypes); $i++) {
             $ViewtypesArray[$i] = $Viewtypes[$i]->toArray();

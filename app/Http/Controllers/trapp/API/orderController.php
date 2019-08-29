@@ -67,29 +67,41 @@ class OrderController extends SweetController
     {
         $user = Auth::user();
         $UserVillas = trapp_villa::getUserVillas($user->id);
-        $OrderQuery = trapp_order::where('id', '>=', '0');
-        $OrderQuery = SweetQueryBuilder::WhereLikeIfNotNull($OrderQuery, 'villa_fid', $UserVillas[0]->id);
-        $OrderQuery = $OrderQuery->where('orderstatus_fid', '>', 1);
-        $OrdersCount = $OrderQuery->get()->count();
-        if ($request->get('_onlycount') !== null)
-            return response()->json(['Data' => [], 'RecordCount' => $OrdersCount], 200);
-        $Orders = SweetQueryBuilder::setPaginationIfNotNull($OrderQuery, $request->get('__startrow'), $request->get('__pagesize'))->get();
-        $OrdersArray = [];
-        for ($i = 0; $i < count($Orders); $i++) {
-            $OrdersArray[$i] = $Orders[$i]->toArray();
-            $ReservefinancetransactionField = $Orders[$i]->reservefinancetransaction();
-            $OrdersArray[$i]['reservefinancetransactioncontent'] = $ReservefinancetransactionField == null ? '' : $ReservefinancetransactionField->name;
-            $CancelfinancetransactionField = $Orders[$i]->cancelfinancetransaction();
-            $OrdersArray[$i]['cancelfinancetransactioncontent'] = $CancelfinancetransactionField == null ? '' : $CancelfinancetransactionField->name;
-            $VillaField = $Orders[$i]->villa();
-            $OrdersArray[$i]['villacontent'] = $VillaField == null ? '' : $VillaField->placemanplace()->area()->city()->title;
-            $OrderstatusField = $Orders[$i]->orderstatus();
-            $OrdersArray[$i]['orderstatuscontent'] = $OrderstatusField == null ? '' : $OrderstatusField->name;
-            $UserField = $Orders[$i]->user();
-            $OrdersArray[$i]['usercontent'] = $UserField == null ? '' : $UserField->name;
+        $villaID = -1;
+        if ($UserVillas != null && count($UserVillas) > 0)
+            $villaID = $UserVillas[0]->id;
+//        if(key_exists(0,$UserVillas))
+//            $villaID=$UserVillas[0]->id;
+        if ($villaID != '') {
+            $OrderQuery = trapp_order::where('id', '>=', '0');
+            $OrderQuery = SweetQueryBuilder::WhereLikeIfNotNull($OrderQuery, 'villa_fid', $villaID);
+            $OrderQuery = $OrderQuery->where('orderstatus_fid', '>', 1);
+            $OrdersCount = $OrderQuery->get()->count();
+            if ($request->get('_onlycount') !== null)
+                return response()->json(['Data' => [], 'RecordCount' => $OrdersCount], 200);
+            $Orders = SweetQueryBuilder::setPaginationIfNotNull($OrderQuery, $request->get('__startrow'), $request->get('__pagesize'))->get();
+            $OrdersArray = [];
+            for ($i = 0; $i < count($Orders); $i++) {
+                $OrdersArray[$i] = $Orders[$i]->toArray();
+                $ReservefinancetransactionField = $Orders[$i]->reservefinancetransaction();
+                $OrdersArray[$i]['reservefinancetransactioncontent'] = $ReservefinancetransactionField == null ? '' : $ReservefinancetransactionField->name;
+                $CancelfinancetransactionField = $Orders[$i]->cancelfinancetransaction();
+                $OrdersArray[$i]['cancelfinancetransactioncontent'] = $CancelfinancetransactionField == null ? '' : $CancelfinancetransactionField->name;
+                $VillaField = $Orders[$i]->villa();
+                $OrdersArray[$i]['villacontent'] = $VillaField == null ? '' : $VillaField->placemanplace()->area()->city()->title;
+                $OrderstatusField = $Orders[$i]->orderstatus();
+                $OrdersArray[$i]['orderstatuscontent'] = $OrderstatusField == null ? '' : $OrderstatusField->name;
+                $UserField = $Orders[$i]->user();
+                $OrdersArray[$i]['usercontent'] = $UserField == null ? '' : $UserField->name;
+            }
+            $Order = $this->getNormalizedList($OrdersArray);
+            $days = trapp_villa::getReservedDaysOfVilla($UserVillas[0]->id);
+            $reserveddays = $days == null ? [] : $days;
+            return response()->json(['Data' => ['orders' => $Order, 'reserveddays' => $reserveddays], 'RecordCount' => $OrdersCount], 200);
+
         }
-        $Order = $this->getNormalizedList($OrdersArray);
-        return response()->json(['Data' => $Order, 'RecordCount' => $OrdersCount], 200);
+        return response()->json(['Data' => ['orders' => [], 'reserveddays' => []], 'message' => 'هیچ ویلایی برای شما ثبت نشده است', 'user' => $user->id, 'villas' => $UserVillas, 'RecordCount' => 0], 200);
+
     }
     public function list(Request $request)
     {
@@ -151,7 +163,7 @@ class OrderController extends SweetController
             $OrderstatusField = $Orders[$i]->orderstatus();
             $OrdersArray[$i]['orderstatuscontent'] = $OrderstatusField == null ? '' : $OrderstatusField->name;
             $UserField = $Orders[$i]->user();
-            $OrdersArray[$i]['usercontent'] = $UserField == null ? '' : $UserField->name;
+            $OrdersArray[$i]['usercontent'] = $UserField == null ? '' : $UserField->name . " " . $UserField->phone;
         }
         $Order = $this->getNormalizedList($OrdersArray);
         return response()->json(['Data' => $Order, 'RecordCount' => $OrdersCount], 200);

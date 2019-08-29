@@ -17,4 +17,8 @@ use Mockery\Exception;
 class TransactionManager
 {
 
+    public static function getUserBalance($UserID)
+    {
+        return finance_transaction::getUserBalance($UserID);
+    }
 }

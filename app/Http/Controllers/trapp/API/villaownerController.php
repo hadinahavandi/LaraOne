@@ -1,5 +1,10 @@
 <?php
 namespace App\Http\Controllers\trapp\API;
+
+use App\Http\Controllers\finance\classes\TransactionManager;
+use App\Http\Requests\trapp\trapp_villaownerAddRequest;
+use App\Http\Requests\trapp\trapp_villaownerUpdateRequest;
+use App\models\finance\finance_transaction;
 use App\models\trapp\trapp_villaowner;
 use App\Http\Controllers\Controller;
 use App\Sweet\SweetQueryBuilder;
@@ -8,54 +13,64 @@ use Illuminate\Http\Request;
 use App\Classes\Sweet\SweetDBFile;
 use Bouncer;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Validator;
+use Illuminate\Validation\ValidationException;
 
 class VillaownerController extends SweetController
 {
     private $ModuleName = 'trapp';
 
-    public function add(Request $request)
+    public function add(trapp_villaownerAddRequest $request)
     {
 //        if(!Bouncer::can('trapp.villaowner.insert'))
 //            throw new AccessDeniedHttpException();
 
-        $InputName = $request->input('name');
+//        $this->_validateFields($request,false);
+        $request->validated();
+        $InputName = $request->input('name', ' ');
         $InputUser = Auth::user()->id;
-        $InputNationalcodebnum = $request->input('nationalcodebnum');
-        $InputAddress = $request->input('address');
-        $InputShabacodebnum = $request->input('shabacodebnum');
-        $InputTelbnum = $request->input('telbnum');
-        $InputBackuptelbnum = $request->input('backuptelbnum');
-        $InputEmail = $request->input('email');
-        $InputBackupmobilebnum = $request->input('backupmobilebnum');
-        $InputPlacemanarea = $request->input('placemanarea');
+        $InputNationalcodebnum = $request->input('nationalcodebnum', 0);
+        $InputAddress = $request->input('address', ' ');
+        $InputShabacodebnum = $request->input('shabacodebnum', 0);
+        $InputTelbnum = $request->input('telbnum', 0);
+        $InputBackuptelbnum = $request->input('backuptelbnum', 0);
+        $InputEmail = $request->input('email', 'ثبت نشده');
+        $InputBackupmobilebnum = $request->input('backupmobilebnum', 0);
+        $InputPlacemanarea = $request->input('placemanarea', -1);
 
         $Villaowner = trapp_villaowner::create(['name' => $InputName, 'user_fid' => $InputUser, 'nationalcode_bnum' => $InputNationalcodebnum, 'address' => $InputAddress, 'shabacode_bnum' => $InputShabacodebnum, 'tel_bnum' => $InputTelbnum, 'backuptel_bnum' => $InputBackuptelbnum, 'email' => $InputEmail, 'backupmobile_bnum' => $InputBackupmobilebnum, 'placeman_area_fid' => $InputPlacemanarea, 'deletetime' => -1]);
         $InputPhotoiguPath = new SweetDBFile(SweetDBFile::$GENERAL_DATA_TYPE_IMAGE, $this->ModuleName, 'villaowner', 'photoigu', $Villaowner->id, 'jpg');
         $InputNationalcardiguPath = new SweetDBFile(SweetDBFile::$GENERAL_DATA_TYPE_IMAGE, $this->ModuleName, 'villaowner', 'nationalcardigu', $Villaowner->id, 'jpg');
         $Villaowner->photo_igu = $InputPhotoiguPath->uploadFromRequest($request->file('photoigu'));
+        $InputPhotoiguPath->compressImage(75, 1280, 720);
+
         $Villaowner->nationalcard_igu = $InputNationalcardiguPath->uploadFromRequest($request->file('nationalcardigu'));
         $Villaowner->save();
         return response()->json(['Data' => $Villaowner], 201);
     }
 
-    public function update($id, Request $request)
+    public function update($id, trapp_villaownerUpdateRequest $request)
     {
 //        if(!Bouncer::can('trapp.villaowner.edit'))
 //            throw new AccessDeniedHttpException();
 //
-        $InputName = $request->get('name');
-        $InputNationalcodebnum = $request->get('nationalcodebnum');
-        $InputAddress = $request->get('address');
-        $InputShabacodebnum = $request->get('shabacodebnum');
-        $InputTelbnum = $request->get('telbnum');
-        $InputBackuptelbnum = $request->get('backuptelbnum');
-        $InputEmail = $request->get('email');
-        $InputBackupmobilebnum = $request->get('backupmobilebnum');
-        $InputPlacemanarea = $request->get('placemanarea');;
-            
-    
+//        $this->_validateFields($request,true);
+        $request->setIsUpdate(true);
+        $request->validated();
+        $InputName = $request->get('name', ' ');
+        $InputNationalcodebnum = $request->get('nationalcodebnum', 0);
+        $InputAddress = $request->get('address', '');
+        $InputShabacodebnum = $request->get('shabacodebnum', 0);
+        $InputTelbnum = $request->get('telbnum', 0);
+        $InputBackuptelbnum = $request->get('backuptelbnum', 0);
+        $InputEmail = $request->get('email', '');
+        $InputBackupmobilebnum = $request->get('backupmobilebnum', 0);
+        $InputPlacemanarea = $request->get('placemanarea', -1);;
+
+
         $Villaowner = new trapp_villaowner();
         $Villaowner = $Villaowner->find($id);
         $Villaowner->name = $InputName;
@@ -66,16 +81,20 @@ class VillaownerController extends SweetController
         $Villaowner->backuptel_bnum = $InputBackuptelbnum;
         $Villaowner->email = $InputEmail;
         $Villaowner->backupmobile_bnum = $InputBackupmobilebnum;
-        $Villaowner->placeman_area_fid = $InputPlacemanarea;
+        if ($InputPlacemanarea > 0)
+            $Villaowner->placeman_area_fid = $InputPlacemanarea;
         $InputPhotoiguPath = new SweetDBFile(SweetDBFile::$GENERAL_DATA_TYPE_IMAGE, $this->ModuleName, 'villaowner', 'photoigu', $Villaowner->id, 'jpg');
         $InputNationalcardiguPath = new SweetDBFile(SweetDBFile::$GENERAL_DATA_TYPE_IMAGE, $this->ModuleName, 'villaowner', 'nationalcardigu', $Villaowner->id, 'jpg');
-        if ($InputPhotoiguPath != null)
+        if ($InputPhotoiguPath != null) {
             $Villaowner->photo_igu = $InputPhotoiguPath->uploadFromRequest($request->file('photoigu'));
+            $InputPhotoiguPath->compressImage(75, 1280, 720);
+        }
         if ($InputNationalcardiguPath != null)
             $Villaowner->nationalcard_igu = $InputNationalcardiguPath->uploadFromRequest($request->file('nationalcardigu'));
         $Villaowner->save();
         return response()->json(['Data' => $Villaowner], 202);
     }
+
     public function list(Request $request)
     {
         Bouncer::allow('admin')->to('trapp.villaowner.insert');
@@ -87,6 +106,7 @@ class VillaownerController extends SweetController
         //throw new AccessDeniedHttpException();
         $SearchText = $request->get('searchtext');
         $VillaownerQuery = trapp_villaowner::where('id', '>=', '0');
+
         $VillaownerQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaownerQuery, 'name', $SearchText);
         $VillaownerQuery = SweetQueryBuilder::WhereLikeIfNotNull($VillaownerQuery, 'name', $request->get('name'));
         $VillaownerQuery = SweetQueryBuilder::OrderIfNotNull($VillaownerQuery, 'name__sort', 'name', $request->get('name__sort'));
@@ -123,6 +143,7 @@ class VillaownerController extends SweetController
             $VillaownersArray[$i]['placemanareacontent'] = $AreaField == null ? '' : $AreaField->title;
             $VillaownersArray[$i]['citycontent'] = $CityField == null ? '' : $CityField->title;
             $VillaownersArray[$i]['provincecontent'] = $ProvinceField == null ? '' : $ProvinceField->title;
+            $VillaownersArray[$i]['bakance'] = TransactionManager::getUserBalance($Villaowners[$i]->user_fid);
         }
         $Villaowner = $this->getNormalizedList($VillaownersArray);
         return response()->json(['Data' => $Villaowner, 'RecordCount' => $VillaownersCount], 200);
@@ -163,5 +184,12 @@ class VillaownerController extends SweetController
         $Villaowner = trapp_villaowner::find($id);
         $Villaowner->delete();
         return response()->json(['message' => 'deleted', 'Data' => []], 202);
+    }
+
+    public function getVillaOwnerBalances()
+    {
+        $Query = trapp_villaowner::leftJoin('finance_transaction', 'finance_transaction.user_fid', '=', 'trapp_villaowner.user_fid')->groupBy('trapp_villaowner.id')->orderBy('balance', 'DESC')->get(['trapp_villaowner.*', DB::raw('sum(amount_prc) as balance')]);
+
+        return response()->json(['message' => 'OK', 'Data' => $Query], 200);
     }
 }

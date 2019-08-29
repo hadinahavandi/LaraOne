@@ -33,6 +33,61 @@ class SweetDBFile
         return $Path;
     }
 
+    public function compressImage($quality, $maxWidth, $maxHeight, $destination = null)
+    {
+        $Path = $this->getFileLocation();
+        if (file_exists($Path)) {
+            if ($destination == null)
+                $destination = $Path;
+            $this->_compressImage($Path, $destination, $quality, $maxWidth, $maxHeight);
+        }
+        return $Path;
+    }
+
+    private function _compressImage($source, $destination, $quality, $maxWidth, $maxHeight)
+    {
+
+        $info = getimagesize($source);
+
+        $width = $info[0];
+        $height = $info[1];
+        //echo $width . "%".$height;
+        $widthScaleFactor = $maxWidth / $width;
+        $heightScaleFactor = $maxHeight / $height;
+        $newWidth = 0;
+        $newHeight = 0;
+        if ($widthScaleFactor < $heightScaleFactor) {
+            if ($width > $maxWidth) {
+
+                $newWidth = $maxWidth;
+                $newHeight = $height * $widthScaleFactor;
+            }
+        } else {
+
+            if ($height > $maxHeight) {
+                $newHeight = $maxHeight;
+                $newWidth = $width * $heightScaleFactor;
+            }
+        }
+
+        $image = "";
+        if ($info['mime'] == 'image/jpeg')
+            $image = imagecreatefromjpeg($source);
+
+        elseif ($info['mime'] == 'image/gif')
+            $image = imagecreatefromgif($source);
+
+        elseif ($info['mime'] == 'image/png')
+            $image = imagecreatefrompng($source);
+        if ($newHeight > 0 && $newWidth > 0) {
+            $newImage = imagecreatetruecolor($newWidth, $newHeight);
+            imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            imagejpeg($newImage, $destination, $quality);
+        } else
+            imagejpeg($image, $destination, $quality);
+
+
+    }
     public function getFileLocation()
     {
         return $this->getFolderLocation() . '/' . $this->getFileName();

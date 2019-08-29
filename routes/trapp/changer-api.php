@@ -38,6 +38,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
 
 //------------------------------------------------------------------------------------------------------
+    Route::get('trapp/villa/options/list', 'trapp\\API\\villaController@getRelatedOptions');
     Route::get('trapp/inactivevilla', 'trapp\\API\\villaController@inactiveList');
     Route::get('trapp/villa', 'trapp\\API\\villaController@list');
     Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
@@ -73,5 +74,21 @@ Route::group(['middleware' => 'auth:api'], function () {
 //------------------------------------------------------------------------------------------------------
     Route::get('trapp/villaowner', 'trapp\\API\\villaownerController@list');
     Route::get('trapp/villaowner/{id}', 'trapp\\API\\villaownerController@get');
+});
+?>
+<?php
+//------------------------------------------------------------------------------------------------------
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::post('trapp/option', 'trapp\\API\\optionController@add');
+    Route::put('trapp/option/{id}', 'trapp\\API\\optionController@update');
+    Route::delete('trapp/option/{id}', 'trapp\\API\\optionController@delete');
+});
+?><?php
+//------------------------------------------------------------------------------------------------------
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::post('trapp/villaoption', 'trapp\\API\\villaoptionController@add');
+    Route::put('trapp/villaoption/{id}', 'trapp\\API\\villaoptionController@update');
+    Route::delete('trapp/villaoption/{id}', 'trapp\\API\\villaoptionController@delete');
+    Route::put('trapp/villaoption/byvilla/{VillaID}', 'trapp\\API\\villaoptionController@saveVillaOptions');
 });
 ?>

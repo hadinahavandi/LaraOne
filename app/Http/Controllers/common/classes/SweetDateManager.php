@@ -18,10 +18,34 @@ class SweetDateManager
     {
         $DateInMorilogJalalian = jdate($Date);
         $NormalTimeStamp = $DateInMorilogJalalian->getTimestamp();
-//        echo "\r\n".$Date . "= ".$NormalTimeStamp;
         $FoundDate = common_date::where('day_date', '=', $NormalTimeStamp)->get();
         if ($FoundDate->isEmpty())
             return false;
         return true;
     }
+
+    public static function stringIsHoliday($Date)
+    {
+        $NormalTimeStamp = SweetDateManager::getTimeStampFromString($Date);
+        $FoundDate = common_date::where('day_date', '=', $NormalTimeStamp)->get();
+        if ($FoundDate->isEmpty())
+            return false;
+        return true;
+    }
+
+    public static function getTimeStampFromString($String, $format = 'Y/m/d')
+    {
+        if (strlen($String) == 10)//1370/08/15
+            return Jalalian::fromFormat($format, $String)->getTimestamp();
+        return 0;
+    }
+
+    public static function getStringFromTimeStamp($TimeStamp, $format = 'Y/m/d')
+    {
+        $DateInMorilogJalalian = jdate($TimeStamp);
+        if (strlen($TimeStamp) > 1)
+            return $DateInMorilogJalalian->format($format);
+        return '';
+    }
+
 }

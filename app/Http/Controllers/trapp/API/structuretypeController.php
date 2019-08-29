@@ -1,41 +1,50 @@
 <?php
-
 namespace App\Http\Controllers\trapp\API;
-
 use App\models\trapp\trapp_structuretype;
 use App\Http\Controllers\Controller;
 use App\Sweet\SweetQueryBuilder;
 use App\Sweet\SweetController;
 use Illuminate\Http\Request;
+use App\Classes\Sweet\SweetDBFile;
+use Illuminate\Validation\ValidationException;
+use Validator;
 use Bouncer;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use App\Http\Requests\trapp\trapp_structuretypeAddRequest;
+use App\Http\Requests\trapp\trapp_structuretypeUpdateRequest;
 
 class StructuretypeController extends SweetController
 {
+    private $ModuleName = 'trapp';
 
-    public function add(Request $request)
+    public function add(trapp_structuretypeAddRequest $request)
     {
         if (!Bouncer::can('trapp.structuretype.insert'))
             throw new AccessDeniedHttpException();
+        $request->validated();
 
-        $InputName = $request->input('name');
+        $InputName = $request->input('name', ' ');
+
         $Structuretype = trapp_structuretype::create(['name' => $InputName, 'deletetime' => -1]);
         return response()->json(['Data' => $Structuretype], 201);
     }
 
-    public function update($id, Request $request)
+    public function update($id, trapp_structuretypeUpdateRequest $request)
     {
         if (!Bouncer::can('trapp.structuretype.edit'))
             throw new AccessDeniedHttpException();
+        $request->setIsUpdate(true);
+        $request->validated();
 
-        $InputName = $request->get('name');
+        $InputName = $request->get('name', ' ');;
+            
+    
         $Structuretype = new trapp_structuretype();
         $Structuretype = $Structuretype->find($id);
         $Structuretype->name = $InputName;
         $Structuretype->save();
         return response()->json(['Data' => $Structuretype], 202);
     }
-
     public function list(Request $request)
     {
         Bouncer::allow('admin')->to('trapp.structuretype.insert');
@@ -53,7 +62,7 @@ class StructuretypeController extends SweetController
         $StructuretypesCount = $StructuretypeQuery->get()->count();
         if ($request->get('_onlycount') !== null)
             return response()->json(['Data' => [], 'RecordCount' => $StructuretypesCount], 200);
-        $Structuretypes = SweetQueryBuilder::setPaginationIfNotNull($StructuretypeQuery, $request->get('__startrow'), $request->get('__ esize'))->get();
+        $Structuretypes = SweetQueryBuilder::setPaginationIfNotNull($StructuretypeQuery, $request->get('__startrow'), $request->get('__pagesize'))->get();
         $StructuretypesArray = [];
         for ($i = 0; $i < count($Structuretypes); $i++) {
             $StructuretypesArray[$i] = $Structuretypes[$i]->toArray();

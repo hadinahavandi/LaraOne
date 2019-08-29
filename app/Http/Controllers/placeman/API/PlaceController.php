@@ -45,8 +45,8 @@ class PlaceController extends SweetController
 
     public function update($id, Request $request)
     {
-        if (!Bouncer::can('placeman.place.edit'))
-            throw new AccessDeniedHttpException();
+//        if (!Bouncer::can('placeman.place.edit'))
+//            throw new AccessDeniedHttpException();
 
         $InputTitle = $request->get('title');
         $InputLogoigu = $request->file('logoigu');
@@ -60,10 +60,10 @@ class PlaceController extends SweetController
         $InputActive = $request->get('active');
         $InputAddress = $request->get('address');
         $InputArea = $request->get('area');
-        $InputUser = $request->get('user');
+//        $InputUser = $request->get('user');
         $InputLatitude = $request->get('latitude');
         $InputLongitude = $request->get('longitude');
-        $InputVisits = $request->get('visits');;
+//        $InputVisits = $request->get('visits');;
 
 
         $Place = new placeman_place();
@@ -75,10 +75,10 @@ class PlaceController extends SweetController
         $Place->isactive = $InputActive;
         $Place->address = $InputAddress;
         $Place->area_fid = $InputArea;
-        $Place->user_fid = $InputUser;
+//        $Place->user_fid = $InputUser;
         $Place->latitude = $InputLatitude;
         $Place->longitude = $InputLongitude;
-        $Place->visits = $InputVisits;
+//        $Place->visits = $InputVisits;
         $Place->save();
         return response()->json(['Data' => $Place], 202);
     }

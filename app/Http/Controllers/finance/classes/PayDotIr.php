@@ -15,14 +15,17 @@ use Mockery\Exception;
 
 class PayDotIr
 {
-    public static function newTransaction($amount, $Description, $RedirectURL)
+    public static function newTransaction($api, $amount, $Description, $RedirectURL)
     {
         try {
             $UserID = Auth::user()->getAuthIdentifier();
-            $api = '9b92388e553ba7fd7e3a6d3f28facc45';
+//            $api = '598b9a1afff447b50fbdcfcec969d820';//trapp.sweetsoft.ir
+//            $api = '9b92388e553ba7fd7e3a6d3f28facc45';//JspTutorial.sweetsoft.ir
             $factorNumber = 123;
             $result = PayDotIr::send($api, $amount, $RedirectURL, $factorNumber);
             $result = json_decode($result);
+            if ($result == null || !property_exists($result, 'transId'))
+                return ['transactionid' => '-2'];
             $TransactionID = $result->transId;
 //            $TransactionID = "1147";
             $Transaction = finance_transaction::create(['amount_prc' => $amount, 'transactionid' => $TransactionID, 'status' => 1, 'user_fid' => $UserID, 'description_te' => $Description]);
@@ -53,6 +56,12 @@ class PayDotIr
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $res = curl_exec($ch);
         curl_close($ch);
+        $res = json_decode($res);
+//        echo "STATUS:".$res->status;
+//        echo "ERROR:".$res->errorCode;
+//        echo "ERROR:".$res->errorMessage;
+        if ($res->status != '1')
+            throw new unsuccessfulPaymentException();
         return $res;
     }
 }

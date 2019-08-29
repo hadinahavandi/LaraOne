@@ -68,4 +68,5 @@ Route::post('/financial/payment', 'finance\\web\\RechargeController@verifyPaymen
 Route::get('/financial/recharge/{TransactionID}', 'finance\\web\\RechargeController@startPayment');
 
 Route::post('trapp/villa/reserveverify/{OrderID}', 'trapp\\API\\villaController@verifyPaymentAndReserve');
+Route::get('trapp/villa/reserveverify/{OrderID}', 'trapp\\API\\villaController@verifyPaymentAndReserve');
 Route::get('trapp/villa/testpayment/{OrderID}', 'trapp\\API\\villaController@testPayment');
