@@ -256,14 +256,20 @@ class RequestController extends SweetController
     }
     public function list(Request $request)
     {
-//        Bouncer::allow('admin')->to('sas.request.insert');
-//        Bouncer::allow('admin')->to('sas.request.edit');
+        Bouncer::disallow('admin')->to('sas.request.insert');
+        Bouncer::disallow('admin')->to('sas.request.edit');
+        Bouncer::disallow('admin')->to('sas.request.delete');
+        Bouncer::disallow('admin')->to('sas.request.outbox');
+        Bouncer::disallow('admin')->to('sas.device.insert');
+        Bouncer::disallow('admin')->to('sas.device.edit');
+        Bouncer::disallow('admin')->to('sas.device.delete');
+        Bouncer::disallow('admin')->to('sas.device.list');
+        Bouncer::allow('admin')->to('sas.device.listall');
 //        Bouncer::allow('admin')->to('sas.request.list');
 //        Bouncer::allow('admin')->to('sas.request.view');
-//        Bouncer::allow('admin')->to('sas.request.delete');
 //
         Bouncer::allow('type1_unituser')->to('sas.request.insert');
-        Bouncer::allow('type1_unituser')->to('sas.request.list');
+//        Bouncer::deny('type1_unituser')->to('sas.request.list');
         Bouncer::allow('type1_unituser')->to('sas.request.view');
         Bouncer::allow('type1_unituser')->to('sas.device.insert');
         Bouncer::allow('type1_unituser')->to('sas.device.list');
@@ -275,6 +281,8 @@ class RequestController extends SweetController
 
         Bouncer::allow('type2_unituser')->to('sas.request.inbox');
         Bouncer::allow('type3_unituser')->to('sas.request.inbox');
+
+
 //
 //        Bouncer::allow('unitadmin')->to('sas.request.insert');
 //        Bouncer::allow('unitadmin')->to('sas.request.list');
@@ -284,20 +292,23 @@ class RequestController extends SweetController
 //        Bouncer::allow('unitadmin')->to('sas.device.view');
 //        Bouncer::allow('unitadmin')->to('sas.device.edit');
 //
-//        Bouncer::allow('unitsecurity')->to('sas.request.insert');
-//        Bouncer::allow('unitsecurity')->to('sas.request.list');
-//        Bouncer::allow('unitsecurity')->to('sas.request.view');
-//        Bouncer::allow('unitsecurity')->to('sas.device.insert');
-//        Bouncer::allow('unitsecurity')->to('sas.device.list');
-//        Bouncer::allow('unitsecurity')->to('sas.device.view');
-//        Bouncer::allow('unitsecurity')->to('sas.device.edit');
+        Bouncer::allow('type1_unitsecurity')->to('sas.request.insert');
+        Bouncer::disallow('type1_unitsecurity')->to('sas.request.list');
+        Bouncer::allow('type1_unitsecurity')->to('sas.request.view');
+        Bouncer::allow('type1_unitsecurity')->to('sas.device.insert');
+        Bouncer::allow('type1_unitsecurity')->to('sas.device.list');
+        Bouncer::allow('type1_unitsecurity')->to('sas.device.view');
+        Bouncer::allow('type1_unitsecurity')->to('sas.device.edit');
+        Bouncer::allow('type1_unitsecurity')->to('sas.request.approve');
+
+        Bouncer::disallow('type1_unitsecurity')->to('sas.request.inbox');
         Bouncer::allow('type2_unitsecurity')->to('sas.request.inbox');
         Bouncer::allow('type3_unitsecurity')->to('sas.request.inbox');
 
 
         Bouncer::allow('type1_unitadmin')->to('sas.request.outbox');
         Bouncer::allow('type1_unitadmin')->to('sas.request.insert');
-        Bouncer::allow('type1_unitadmin')->to('sas.request.list');
+        Bouncer::disallow('type1_unitadmin')->to('sas.request.list');
         Bouncer::allow('type1_unitadmin')->to('sas.device.insert');
         Bouncer::allow('type1_unitadmin')->to('sas.device.list');
         Bouncer::allow('type1_unitadmin')->to('sas.device.view');
@@ -307,7 +318,7 @@ class RequestController extends SweetController
 
         Bouncer::allow('type2_unitadmin')->to('sas.request.outbox');
         Bouncer::allow('type2_unitadmin')->to('sas.request.insert');
-        Bouncer::allow('type2_unitadmin')->to('sas.request.list');
+        Bouncer::disallow('type2_unitadmin')->to('sas.request.list');
         Bouncer::allow('type2_unitadmin')->to('sas.device.insert');
         Bouncer::allow('type2_unitadmin')->to('sas.device.list');
         Bouncer::allow('type2_unitadmin')->to('sas.device.view');
@@ -318,7 +329,7 @@ class RequestController extends SweetController
 
 
         Bouncer::allow('type3_unitadmin')->to('sas.request.inbox');
-        Bouncer::allow('type3_unitadmin')->to('sas.request.list');
+        Bouncer::disallow('type3_unitadmin')->to('sas.request.list');
         Bouncer::allow('type3_unitadmin')->to('sas.request.change');
 
 

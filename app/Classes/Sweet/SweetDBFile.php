@@ -9,6 +9,8 @@
 namespace App\Classes\Sweet;
 
 
+use App\Exceptions\Sweet\TooBigFileException;
+
 class SweetDBFile
 {
     public static $GENERAL_DATA_TYPE_FILE = 1;
@@ -33,6 +35,12 @@ class SweetDBFile
         return $Path;
     }
 
+    public static function validateRequestFileSize($InputFile,$MaxFileSize){
+        if ($InputFile != null) {
+            if ($InputFile->getSize() > $MaxFileSize)
+                throw new TooBigFileException("File Is Too Big");
+        }
+    }
     public function compressImage($quality, $maxWidth, $maxHeight, $destination = null)
     {
         $Path = $this->getFileLocation();

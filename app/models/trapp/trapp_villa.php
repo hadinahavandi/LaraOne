@@ -3,15 +3,17 @@
 namespace App\models\trapp;
 
 use App\Http\Controllers\trapp\classes\villaOption;
+use App\models\comments\comments_comment;
 use App\models\placeman\placeman_place;
 use App\models\placeman\placeman_placephoto;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class trapp_villa extends Model
 {
     protected $table = "trapp_villa";
-    protected $fillable = ['roomcount_num', 'capacity_num', 'maxguests_num', 'structurearea_num', 'totalarea_num', 'placeman_place_fid', 'is_addedbyowner', 'viewtype_fid', 'structuretype_fid', 'is_fulltimeservice', 'timestart_clk', 'owningtype_fid', 'areatype_fid', 'description_te', 'documentphoto_igu', 'normalprice_prc', 'holidayprice_prc', 'weeklyoff_num', 'monthlyoff_num'];
+    protected $fillable = ['roomcount_num', 'capacity_num', 'maxguests_num', 'structurearea_num', 'totalarea_num', 'placeman_place_fid', 'is_addedbyowner', 'viewtype_fid', 'structuretype_fid', 'is_fulltimeservice', 'timestart_clk', 'owningtype_fid', 'areatype_fid', 'description_te', 'documentphoto_igu', 'normalprice_prc', 'holidayprice_prc','normalpureprice_prc','discount_num', 'weeklyoff_num', 'monthlyoff_num'];
 
     public function placemanplace()
     {
@@ -52,10 +54,40 @@ class trapp_villa extends Model
 
     public function options()
     {
-        $Options = villaOption::getVillaOptions($this->id);
+        $Options = villaOption::getVillaOptions($this->id,true);
         return $Options;
     }
 
+    public function nonfreeoptions()
+    {
+        $Options = villaOption::getVillaOptions($this->id,false);
+        return $Options;
+    }
+
+    public function publishedComments()
+    {
+        return $this->_getCommentsQuery()->where('comments_comment.publish_time', '!=', "-1")->get();
+    }
+    public function allComments()
+    {
+        return $this->_getCommentsQuery()->get();
+    }
+    public function _getCommentsQuery()
+    {
+        return comments_comment::where('commenttype_fid', '=', '1')->where('subjectentity_fid', '=', $this->id);
+    }
+
+    public function rate()
+    {
+        $Res= comments_comment::where('commenttype_fid', '=', '1')->where('subjectentity_fid', '=', $this->id)->where('publish_time', '!=', "-1")->groupBy('subjectentity_fid')->get([DB::raw('avg(comments_comment.rate_num) AS rate')]);
+        if($Res!=null)
+        {
+            $rArr=$Res->toArray();
+            if(count($rArr)>0)
+                return $rArr[0]['rate'];
+        }
+        return -1;
+    }
     public static function getUserVillas($UserID)
     {
 
@@ -71,7 +103,16 @@ class trapp_villa extends Model
 
     public static function getReservedDaysOfVilla($VillaID)
     {
-        $orders = trapp_order::where('orderstatus_fid', '=', '2')->where('villa_fid', '=', $VillaID)->get();
+        $where=function ($query) {
+            $query->where('orderstatus_fid', '=','2')->orWhere('orderstatus_fid', '=', '3');
+        };
+        return trapp_villa::getReservedWithStatusDaysOfVilla($VillaID,$where);
+    }
+
+    public static function getReservedWithStatusDaysOfVilla($VillaID,$where)
+    {
+        $orders = trapp_order::where($where)
+            ->where('villa_fid', '=', $VillaID)->get();
         $days = [];
         $DayLength = 3600 * 24;
         for ($i = 0; $i < count($orders); $i++) {
@@ -84,11 +125,31 @@ class trapp_villa extends Model
         return $days;
     }
 
+    public static function getReservedByOwnerDaysOfVilla($VillaID)
+    {
+        $where=function ($query) {
+            $query->where('orderstatus_fid', '=','3');
+        };
+        return trapp_villa::getReservedWithStatusDaysOfVilla($VillaID,$where);
+
+    }
+    public static function getReservedByUsersDaysOfVilla($VillaID)
+    {
+        $where=function ($query) {
+            $query->where('orderstatus_fid', '=','2');
+        };
+        return trapp_villa::getReservedWithStatusDaysOfVilla($VillaID,$where);
+
+    }
     public static function getIsVillaReservable($VillaID, $StartDate, $Duration)
     {
         $DayLength = 3600 * 24;
         $EndDate = (int)$StartDate + (int)$DayLength * ($Duration - 1);
-        $NumOfOrdersInRange = trapp_order::where('orderstatus_fid', '=', '2')->where('villa_fid', '=', $VillaID)->where('start_date', '<=', $EndDate)->whereRaw("start_date+((duration_num-1)*$DayLength)>=$StartDate")->get()->count();
+        $NumOfOrdersInRange = trapp_order::where(function ($query) {
+            $query->where('orderstatus_fid', '=', '2')
+                ->orWhere('orderstatus_fid', '=', '3');})->where('villa_fid', '=', $VillaID)
+            ->where('start_date', '<=', $EndDate)->whereRaw("start_date+((duration_num-1)*$DayLength)>=$StartDate")
+            ->get()->count();
         return $NumOfOrdersInRange == 0;
     }
 

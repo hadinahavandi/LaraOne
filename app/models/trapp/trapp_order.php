@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class trapp_order extends Model
 {
     protected $table = "trapp_order";
-    protected $fillable = ['price_prc', 'reserve__finance_transaction_fid', 'cancel__finance_transaction_fid', 'villa_fid', 'orderstatus_fid', 'start_date', 'duration_num', 'user_fid'];
+    protected $fillable = ['price_prc', 'reserve__finance_transaction_fid', 'cancel__finance_transaction_fid', 'villa_fid', 'orderstatus_fid', 'start_date', 'duration_num', 'user_fid','guestcount_num','guesttotalprice_num','residencetotalprice_num','residencepricewithoutdiscount_num'];
 
     public function reservefinancetransaction()
     {
@@ -34,5 +34,10 @@ class trapp_order extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_fid')->first();
+    }
+    public function nonFreeOptions()
+    {
+        $nfo=trapp_ordervillanonfreeoption::where('order_fid','=',$this->id)->get();
+        return $nfo;
     }
 }

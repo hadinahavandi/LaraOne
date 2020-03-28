@@ -14,8 +14,8 @@ class trapp_villaownerAddRequest extends trapp_villaownerUpdateRequest
     public function rules()
     {
         $Fields = [
-            'photoigu' => 'required',
-            'nationalcardigu' => 'required',
+            'photoigu' => 'required|max:2047',
+            'nationalcardigu' => 'required|max:2047',
         ];
 
         $Fields = array_merge($Fields, parent::rules());
@@ -43,7 +43,9 @@ class trapp_villaownerAddRequest extends trapp_villaownerUpdateRequest
             'backupmobilebnum.required' => 'وارد کردن تلفن همراه شماره ۲ اجباری می باشد',
             'backupmobilebnum.numeric' => 'مقدار تلفن همراه شماره ۲ باید عدد انگلیسی باشد.',
             'photoigu.required' => 'وارد کردن تصویر اجباری می باشد',
+            'photoigu.max' => 'حجم تصویر باید کمتر از ۲ مگابایت باشد',
             'nationalcardigu.required' => 'وارد کردن تصویر کارت ملی اجباری می باشد',
+            'nationalcardigu.max' => 'حجم تصویر کارت ملی باید کمتر از ۲ مگابایت باشد',
             'placemanarea.required' => 'وارد کردن منطقه اجباری می باشد',
             'placemanarea.integer' => 'مقدار منطقه صحیح وارد نشده است.',
         ];

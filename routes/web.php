@@ -16,7 +16,12 @@ Route::get('/', function () {
 });
 
 Auth::routes();
-
+Route::get('email-test', function(){
+    $details['email'] = 'nahavandi.hadi@gmail.com';
+    $details['mailpostid'] = 1;
+    dispatch(new App\Jobs\SendEmailJob($details));
+    dd('done');
+});
 //Route::get('/home', 'HomeController@index')->name('home');
 //Route::get('/', 'posts\\Web\\postController@index')->name('home');
 Route::get('/posts/post{id}', 'posts\\Web\\postController@get');

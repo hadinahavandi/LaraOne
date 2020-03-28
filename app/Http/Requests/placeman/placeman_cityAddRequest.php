@@ -25,8 +25,8 @@ class placeman_cityAddRequest extends placeman_cityUpdateRequest
         return [
 
             'title.required' => 'وارد کردن عنوان اجباری می باشد',
-            'province_id.required' => 'وارد کردن استان اجباری می باشد',
-            'province_id.integer' => 'مقدار استان صحیح وارد نشده است.',
+            'provinceid.required' => 'وارد کردن استان اجباری می باشد',
+            'provinceid.integer' => 'مقدار استان صحیح وارد نشده است.',
         ];
     }
 }

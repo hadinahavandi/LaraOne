@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Mockery\Exception;
 use Bouncer;
@@ -28,7 +29,7 @@ class UserController extends Controller
     public function login()
     {
 //        return response()->json(['Data' => 'ok'], 200);
-        if (Auth::attempt(['email' => request('name'), 'password' => request('password')])) {
+        if (Auth::guard('web')->attempt(['email' => request('name'), 'password' => request('password')])) {
 //            Bouncer::assign('admin')->to(Auth::user());
             return $this->createTokenAndGetUserInfo();
         } else {
@@ -38,7 +39,12 @@ class UserController extends Controller
 
     private function createTokenAndGetUserInfo()
     {
-        $user = Auth::user();
+        $user = Auth::guard('web')->user();
+
+        /**********TEMP*******/
+//        $user->assign("admin");
+        /**********TEMP*******/
+
         $success['token'] = $user->createToken('MyApp')->accessToken;
         $Data['sessionkey'] = $success['token'];
         $Data['displayname'] = $user->name;
@@ -64,7 +70,7 @@ class UserController extends Controller
             $user->code = "95844";
             $user->codeexpire_time = "-1";
             $user->save();
-            Auth::login($user);
+            Auth::guard('web')->login($user);
             return $this->createTokenAndGetUserInfo();
 
         } else
@@ -72,6 +78,22 @@ class UserController extends Controller
 
     }
 
+    public function changePassword(Request $request)
+    {
+        $OldPass=request('oldpass');
+        $NewPass=request('newpass');
+        $user = Auth::user();
+        if (Auth::guard('web')->attempt(['email' => $user->email, 'password' => $OldPass])) {
+            if(strlen($NewPass)<8)
+                return response()->json(['message' => 'طول رمز باید بیشتر از 8 کاراکتر باشد'], 200);
+            $user->password=Hash::make($NewPass);
+            $user->save();
+            return response()->json(['message' => 'رمز با موفقیت تغییر یافت'], 200);
+
+        } else {
+            return response()->json(['message' => 'رمز فعلی صحیح نیست'], 200);
+        }
+    }
     public function SendVerificationCode(Request $request)
     {
         $phone = request('phone');
@@ -153,7 +175,7 @@ class UserController extends Controller
      */
     public function details()
     {
-        $user = Auth::user();
+        $user = Auth::guard('web')->user();
         return response()->json(['success' => $user], $this-> successStatus);
     }
 }

@@ -85,14 +85,15 @@ class VillaoptionController extends SweetController
 
     public function listVillaOptions($VillaID, Request $request)
     {
-        $Options = villaOption::getVillaOptions($VillaID);
+        $Options = villaOption::getVillaOptions($VillaID,true);
         $Villaoption = $this->getNormalizedList($Options['data']);
         return response()->json(['Data' => $Villaoption, 'RecordCount' => $Options['count']], 200);
     }
 
+
     public function saveVillaOptions($VillaID, Request $request)
     {
-        $Villaoptions = trapp_option::where('id', '>=', '0')->get();
+        $Villaoptions = trapp_option::getFreeOptions();
         for ($i = 0; $i < count($Villaoptions); $i++) {
             $theOption = $Villaoptions[$i];
             $optionNewValue = $request->get('option' . $theOption->id);

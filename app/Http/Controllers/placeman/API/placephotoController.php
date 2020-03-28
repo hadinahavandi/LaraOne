@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers\placeman\API;
 
+use App\Http\Requests\placeman\placephoto\placeman_placephotoAddRequest;
+use App\Http\Requests\placeman\placephoto\placeman_placephotoUpdateRequest;
 use App\models\placeman\placeman_place;
 use App\models\placeman\placeman_placephoto;
 use App\Http\Controllers\Controller;
@@ -23,19 +25,22 @@ class PlacephotoController extends SweetController
         $UserPlaces = placeman_place::where('user_fid', '=', $user->id)->get();
         return $UserPlaces;
     }
-    public function add(Request $request)
+    public function add(placeman_placephotoAddRequest $request)
     {
 //        if(!Bouncer::can('placeman.placephoto.insert'))
 //            throw new AccessDeniedHttpException();
 
 
-        $InputName = $request->input('name');
+        $request->validated();
+        $InputName = $request->getName();
         $InputPhototype = 1;
-        $InputPlace = $this->getUserPlaces()[0]->id;
+        $InputPlace =$request->getPlace();
+        if($InputPlace<=0)
+            $InputPlace=$this->getUserPlaces()[0]->id;
 
         $Placephoto = placeman_placephoto::create(['name' => $InputName, 'phototype_fid' => $InputPhototype, 'place_fid' => $InputPlace, 'deletetime' => -1]);
         $InputPhotoiguPath = new SweetDBFile(SweetDBFile::$GENERAL_DATA_TYPE_IMAGE, $this->ModuleName, 'placephoto', 'photoigu', $Placephoto->id, 'jpg');
-        $Placephoto->photo_igu = $InputPhotoiguPath->uploadFromRequest($request->file('photoigu'));
+        $Placephoto->photo_igu = $InputPhotoiguPath->uploadFromRequest($request->getPhotoigu());
         $InputPhotoiguPath->compressImage(75, 600, 600);
         $InputPhotoiguPath->compressImage(75, 200, 200, $Placephoto->photo_igu . "thumb");
 
@@ -43,7 +48,7 @@ class PlacephotoController extends SweetController
         return response()->json(['Data' => $Placephoto], 201);
     }
 
-    public function update($id, Request $request)
+    public function update($id, placeman_placephotoUpdateRequest $request)
     {
 //        if(!Bouncer::can('placeman.placephoto.edit'))
 //            throw new AccessDeniedHttpException();
@@ -53,6 +58,7 @@ class PlacephotoController extends SweetController
 //		$InputPlace=$request->get('place');;
 
 
+        $request->validated();
         $Placephoto = new placeman_placephoto();
         $Placephoto = $Placephoto->find($id);
 //        $Placephoto->name = $InputName;
@@ -60,7 +66,7 @@ class PlacephotoController extends SweetController
 //        $Placephoto->place_fid=$InputPlace;
         $InputPhotoiguPath = new SweetDBFile(SweetDBFile::$GENERAL_DATA_TYPE_IMAGE, $this->ModuleName, 'placephoto', 'photoigu', $Placephoto->id, 'jpg');
         if ($InputPhotoiguPath != null) {
-            $Placephoto->photo_igu = $InputPhotoiguPath->uploadFromRequest($request->file('photoigu'));
+            $Placephoto->photo_igu = $InputPhotoiguPath->uploadFromRequest($request->getPhotoigu());
             $InputPhotoiguPath->compressImage(75, 1280, 720);
             $InputPhotoiguPath->compressImage(75, 200, 200, $Placephoto->photo_igu . "thumb");
 

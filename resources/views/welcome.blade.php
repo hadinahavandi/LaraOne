@@ -1,29 +1,24 @@
-<!doctype html>
-<html lang="en" class="no-js">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <title>آرسام پژوهش</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Lingua project">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/styles/bootstrap4/bootstrap.min.css">
+    <link href="/plugins/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
-    <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="css/reset.css"> <!-- CSS reset -->
-    <link rel="stylesheet" href="css/style.css"> <!-- Resource style -->
-
-    <script src="js/modernizr.js"></script> <!-- Modernizr -->
-
-    <title>Trapp - an app for Travel</title>
+    <link rel="stylesheet" type="text/css" href="/styles/blog_single.css">
+    <link rel="stylesheet" type="text/css" href="/styles/blog_single_responsive.css">
+    <link rel="stylesheet" type="text/css" href="/styles/main_styles.css">
+    <link rel="stylesheet" type="text/css" href="/styles/responsive.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
-<header class="cd-header">
-</header>
 
-<main class="cd-main-content">
-    <div class="cd-product-intro">
-        <h1>Trapp</h1>
-        <p>Travel Easily</p>
-    </div>
-    <div class="cd-loader"></div> <!-- top loading bar -->
-</main>
-<script src="js/jquery-2.1.1.js"></script>
-<script src="js/main.js"></script> <!-- Resource jQuery -->
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="root"></div>
 </body>
+<script src="{{ asset('js/app.js') }}"></script>
 </html>

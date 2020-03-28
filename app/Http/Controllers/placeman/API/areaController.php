@@ -34,8 +34,8 @@ class AreaController extends SweetController
 
     public function update($id, placeman_areaUpdateRequest $request)
     {
-        if (!Bouncer::can('placeman.area.edit'))
-            throw new AccessDeniedHttpException();
+//        if (!Bouncer::can('placeman.area.edit'))
+//            throw new AccessDeniedHttpException();
         $request->setIsUpdate(true);
         $request->validated();
 

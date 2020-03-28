@@ -70,6 +70,21 @@ class UnitController extends SweetController
         }
 
 	}
+	public function resetPassword($id,Request $request)
+    {
+        $Unit = sas_unit::find($id);
+        $User=$Unit->useruser();
+        if($request->get('usertype')==2)
+            $User=$Unit->adminuser();
+        if($request->get('usertype')==3)
+            $User=$Unit->securityuser();
+        if($User!=null){
+            $User->password=Hash::make('12345678');
+            $User->save();
+        }
+        return response()->json(['message'=>'رمز با موفقیت به 12345678 تغییر یافت'], 201);
+
+    }
     public function update($id,Request $request)
     {
         if(!Bouncer::can('sas.unit.edit'))
@@ -110,6 +125,7 @@ class UnitController extends SweetController
         Bouncer::allow('admin')->to('sas.unit.list');
         Bouncer::allow('admin')->to('sas.unit.view');
         Bouncer::allow('admin')->to('sas.unit.delete');
+        Bouncer::allow('admin')->to('sas.unit.resetpassword');
         //if(!Bouncer::can('sas.unit.list'))
         //throw new AccessDeniedHttpException();
         $SearchText = $request->get('searchtext');

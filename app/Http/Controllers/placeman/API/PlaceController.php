@@ -74,7 +74,8 @@ class PlaceController extends SweetController
         $Place->description = $InputDescription;
         $Place->isactive = $InputActive;
         $Place->address = $InputAddress;
-        $Place->area_fid = $InputArea;
+        if($InputArea>0)
+            $Place->area_fid = $InputArea;
 //        $Place->user_fid = $InputUser;
         $Place->latitude = $InputLatitude;
         $Place->longitude = $InputLongitude;

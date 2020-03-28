@@ -16,4 +16,21 @@ class sas_device extends Model
     {
         return $this->belongsTo(sas_unit::class,'owner__unit_fid')->first();
     }
+    public function isActive()
+    {
+        $lastRequest=$this->lastRequest();
+        if($lastRequest==null)
+            return true;
+        return $lastRequest->status()->is_commited;
+    }
+    public function lastRequest()
+    {
+        $lastRequest=sas_request::where('device_fid','=',$this->id)->where('fullsend_time','>','0')->orderBy('id','desc')->first();
+        return $lastRequest;
+    }
+    public function requests()
+    {
+        $Requests=sas_request::where('device_fid','=',$this->id)->where('fullsend_time','>','0')->orderBy('id','desc')->get();
+        return $Requests;
+    }
 }

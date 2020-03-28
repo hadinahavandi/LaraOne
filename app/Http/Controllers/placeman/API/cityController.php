@@ -34,8 +34,8 @@ class CityController extends SweetController
 
     public function update($id, placeman_cityUpdateRequest $request)
     {
-        if (!Bouncer::can('placeman.city.edit'))
-            throw new AccessDeniedHttpException();
+//        if (!Bouncer::can('placeman.city.edit'))
+//            throw new AccessDeniedHttpException();
         $request->setIsUpdate(true);
         $request->validated();
 

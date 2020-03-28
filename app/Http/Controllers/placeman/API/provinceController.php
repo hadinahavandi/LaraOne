@@ -23,8 +23,8 @@ class ProvinceController extends SweetController
 
     public function add(placeman_provinceAddRequest $request)
     {
-        if (!Bouncer::can('placeman.province.insert'))
-            throw new AccessDeniedHttpException();
+//        if (!Bouncer::can('placeman.province.insert'))
+//            throw new AccessDeniedHttpException();
         $request->validated();
 
         $InputTitle = $request->input('title', ' ');
@@ -35,8 +35,8 @@ class ProvinceController extends SweetController
 
     public function update($id, placeman_provinceUpdateRequest $request)
     {
-        if (!Bouncer::can('placeman.province.edit'))
-            throw new AccessDeniedHttpException();
+//        if (!Bouncer::can('placeman.province.edit'))
+//            throw new AccessDeniedHttpException();
         $request->setIsUpdate(true);
         $request->validated();
 

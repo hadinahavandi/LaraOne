@@ -28,3 +28,25 @@ Route::get('trapp/villaoption', 'trapp\\API\\villaoptionController@list');
 Route::get('trapp/villaoption/byvilla/{VillaID}', 'trapp\\API\\villaoptionController@listVillaOptions');
 Route::get('trapp/villaoption/{id}', 'trapp\\API\\villaoptionController@get');
 ?>
+<?php
+Route::get('trapp/villa', 'trapp\\API\\villaController@list');
+Route::get('trapp/villa/price/{id}', 'trapp\\API\\villaController@GetOrderPrice');
+
+
+Route::get('trapp/villa/options/list', 'trapp\\API\\villaController@getRelatedOptions');
+Route::get('trapp/inactivevilla', 'trapp\\API\\villaController@inactiveList');
+Route::get('trapp/villa', 'trapp\\API\\villaController@list');
+
+Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
+Route::get('trapp/villa/{id}/reserveddays', 'trapp\\API\\villaController@getReservedDaysOfVilla');
+?>
+<?php
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/villanonfreeoption', 'trapp\\API\\villanonfreeoptionController@list');
+Route::get('trapp/villanonfreeoption/byvilla/{VillaID}', 'trapp\\API\\villanonfreeoptionController@listVillaNonFreeOptions');
+Route::get('trapp/villanonfreeoption/{id}', 'trapp\\API\\villanonfreeoptionController@get');
+?><?php
+//------------------------------------------------------------------------------------------------------
+Route::get('trapp/ordervillanonfreeoption', 'trapp\\API\\ordervillanonfreeoptionController@list');
+Route::get('trapp/ordervillanonfreeoption/{id}', 'trapp\\API\\ordervillanonfreeoptionController@get');
+?>

@@ -29,12 +29,11 @@ Route::post('users/sendverificationcode', 'API\\UserController@SendVerificationC
 Route::post('users/loginbyphone', 'API\\UserController@VerifyAndLogin');
 
 
-Route::get('posts/post', 'posts\\API\\postController@list');
-Route::get('posts/post/{id}', 'posts\\API\\postController@get');
-
 
 Route::group(['middleware' => 'auth:api'], function() {
 
+    Route::post('files/upload', 'files\\API\\uploadController@uploadImage');
+    Route::put('users/changepass', 'API\\UserController@changePassword');
 //------------------------------------------------------------------------------------------------------
     Route::post('trapp/owningtype', 'trapp\\API\\owningtypeController@add');
     Route::put('trapp/owningtype/{id}', 'trapp\\API\\owningtypeController@update');
@@ -101,9 +100,6 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::put('contactus/degree/{id}', 'contactus\\API\\degreeController@update');
     Route::delete('contactus/degree/{id}', 'contactus\\API\\degreeController@delete');
 
-    Route::post('posts/post', 'posts\\API\\postController@add');
-    Route::put('posts/post/{id}', 'posts\\API\\postController@update');
-    Route::delete('posts/post/{id}', 'posts\\API\\postController@delete');
 
 
 //------------------------------------------------------------------------------------------------------
@@ -219,6 +215,7 @@ Route::group(['middleware' => 'auth:api'], function() {
 
 //------------------------------------------------------------------------------------------------------
     Route::get('sas/unit', 'sas\\API\\unitController@list');
+    Route::put('sas/unit/resetpassword/{id}', 'sas\\API\\unitController@resetPassword');
     Route::get('sas/unit/userunitinfo', 'sas\\API\\unitController@getUserUnitInfo');
     Route::get('sas/unit/{id}', 'sas\\API\\unitController@get');
 //------------------------------------------------------------------------------------------------------
@@ -240,12 +237,14 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::get('sas/request/{id}', 'sas\\API\\requestController@get');
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
-    Route::get('sas/device', 'sas\\API\\deviceController@list');
+//    Route::get('sas/device', 'sas\\API\\deviceController@list');
+    Route::get('sas/alldevice', 'sas\\API\\deviceController@list');
     Route::get('sas/device/{id}', 'sas\\API\\deviceController@get');
+    Route::get('sas/alldevice/{id}', 'sas\\API\\deviceController@get');
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
     Route::get('sas/device', 'sas\\API\\deviceController@listUserDevices');
-    Route::get('sas/device/all', 'sas\\API\\deviceController@list');
+//    Route::get('sas/device/all', 'sas\\API\\deviceController@list');
     Route::get('sas/device/{id}', 'sas\\API\\deviceController@get');
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
@@ -353,11 +352,10 @@ Route::get('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@get'
 Route::get('trapp/structuretype', 'trapp\\API\\structuretypeController@list');
 Route::get('trapp/structuretype/{id}', 'trapp\\API\\structuretypeController@get');
 //------------------------------------------------------------------------------------------------------
-Route::get('trapp/villa', 'trapp\\API\\villaController@list');
 Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
 //------------------------------------------------------------------------------------------------------
-Route::get('trapp/villa', 'trapp\\API\\villaController@list');
-Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
+//Route::get('trapp/villa', 'trapp\\API\\villaController@list');
+//Route::get('trapp/villa/{id}', 'trapp\\API\\villaController@get');
 
 //------------------------------------------------------------------------------------------------------
 Route::get('trapp/villaowner', 'trapp\\API\\villaownerController@list');
@@ -396,3 +394,19 @@ require_once('finance/viewer-api.php');
 require_once('finance/changer-api.php');
 require_once('common/viewer-api.php');
 require_once('common/changer-api.php');
+require_once('carserviceorder/viewer-api.php');
+require_once('carserviceorder/changer-api.php');
+require_once('comments/viewer-api.php');
+require_once('comments/changer-api.php');
+require_once('appman/viewer-api.php');
+require_once('appman/changer-api.php');
+require_once('research/viewer-api.php');
+require_once('research/changer-api.php');
+require_once('posts/viewer-api.php');
+require_once('posts/changer-api.php');
+require_once('mail/viewer-api.php');
+require_once('mail/changer-api.php');
+require_once('pages/viewer-api.php');
+require_once('pages/changer-api.php');
+require_once('publicrelations/viewer-api.php');
+require_once('publicrelations/changer-api.php');

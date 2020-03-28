@@ -17,6 +17,8 @@ class trapp_villaownerUpdateRequest extends sweetRequest
 
 
             'name' => 'required',
+            'photoigu' => 'max:4096',
+            'nationalcardigu' => 'max:4096',
             'nationalcodebnum' => 'required|numeric|digits:10',
             'address' => 'required',
             'shabacodebnum' => 'required|numeric',
@@ -47,7 +49,9 @@ class trapp_villaownerUpdateRequest extends sweetRequest
             'backupmobilebnum.required' => 'وارد کردن تلفن همراه شماره ۲ اجباری می باشد',
             'backupmobilebnum.numeric' => 'مقدار تلفن همراه شماره ۲ باید عدد انگلیسی باشد.',
             'photoigu.required' => 'وارد کردن تصویر اجباری می باشد',
+            'photoigu.max' => 'حجم تصویر باید کمتر از 4 مگابایت باشد',
             'nationalcardigu.required' => 'وارد کردن تصویر کارت ملی اجباری می باشد',
+            'nationalcardigu.max' => 'حجم تصویر کارت ملی باید کمتر از 4 مگابایت باشد',
             'placemanarea.required' => 'وارد کردن منطقه اجباری می باشد',
             'placemanarea.integer' => 'مقدار منطقه صحیح وارد نشده است.',
         ];

@@ -16,7 +16,7 @@ class placeman_cityUpdateRequest extends sweetRequest
         $Fields = [
 
             'title' => 'required',
-            'province_id' => 'required|min:-1|integer',
+            'province' => 'required|min:-1|integer',
         ];
         return $Fields;
     }
@@ -26,8 +26,8 @@ class placeman_cityUpdateRequest extends sweetRequest
         return [
 
             'title.required' => 'وارد کردن عنوان اجباری می باشد',
-            'province_id.required' => 'وارد کردن استان اجباری می باشد',
-            'province_id.integer' => 'مقدار استان صحیح وارد نشده است.',
+            'province.required' => 'وارد کردن استان اجباری می باشد',
+            'province.integer' => 'مقدار استان صحیح وارد نشده است.',
         ];
     }
 }

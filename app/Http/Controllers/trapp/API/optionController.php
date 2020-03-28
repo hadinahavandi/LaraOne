@@ -24,7 +24,7 @@ class OptionController extends SweetController
         $InputFree = 1;
         $InputCountable = 1;
 
-        $Option = trapp_option::create(['name' => $InputName, 'is_free' => $InputFree, 'is_countable' => $InputCountable, 'deletetime' => -1]);
+        $Option = trapp_option::create(['name' => $InputName, 'is_free' => $InputFree, 'is_countable' => $InputCountable,'is_managedbysystem'=>'0', 'deletetime' => -1]);
         return response()->json(['Data' => $Option], 201);
     }
 
@@ -57,7 +57,7 @@ class OptionController extends SweetController
         //if(!Bouncer::can('trapp.option.list'))
         //throw new AccessDeniedHttpException();
         $SearchText = $request->get('searchtext');
-        $OptionQuery = trapp_option::where('id', '>=', '0');
+        $OptionQuery = trapp_option::where('is_free', '=', '1');
         $OptionQuery = SweetQueryBuilder::WhereLikeIfNotNull($OptionQuery, 'name', $SearchText);
         $OptionQuery = SweetQueryBuilder::WhereLikeIfNotNull($OptionQuery, 'name', $request->get('name'));
         $OptionQuery = SweetQueryBuilder::OrderIfNotNull($OptionQuery, 'name__sort', 'name', $request->get('name__sort'));

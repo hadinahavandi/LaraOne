@@ -28,6 +28,20 @@ class SweetQueryBuilder
         return $QueryBuilder;
     }
 
+    public static function orderByFields(Builder $QueryBuilder,$Fields)
+    {
+        if($Fields!=null){
+
+            $keys=array_keys($Fields);
+            for($i=0;$i<count($keys);$i++)
+            {
+                $key=$keys[$i];
+                $QueryBuilder=$QueryBuilder->orderBy($key,$Fields[$key]==0?'asc':'desc');
+            }
+        }
+        return $QueryBuilder;
+    }
+
     public static function setPaginationFromRequest(Builder $QueryBuilder, Request $request)
     {
         $QueryBuilder = SweetQueryBuilder::setPaginationIfNotNull($QueryBuilder, $request->get('__startrow'), $request->get('__pagesize'));
